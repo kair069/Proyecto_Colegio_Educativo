@@ -25,11 +25,17 @@ SECRET_KEY = 'django-insecure-!n_e-@z&vnn_a-!k9&o%t#g89sp2a(2r38elsb6v$fazk^nnn+
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
-
+ALLOWED_HOSTS = [
+    'proyecto-colegio-educativo.onrender.com',
+    'localhost',
+    '127.0.0.1'
+]
+CSRF_TRUSTED_ORIGINS = [
+    'https://proyecto-colegio-educativo.onrender.com'
+]
 TIME_ZONE = 'America/Lima'  # Cambia esto según tu país
 USE_TZ = True
-
+CORS_ALLOW_ALL_ORIGINS = True  # O restringirlo a dominios específicos
 # Application definition
 
 INSTALLED_APPS = [
@@ -44,6 +50,7 @@ INSTALLED_APPS = [
     "django_summernote",
     'crispy_forms',
     'crispy_bootstrap5',  # Si usas Bootstrap 5
+    'corsheaders',
     
 ]
 CRISPY_ALLOWED_TEMPLATE_PACKS = "bootstrap5"
