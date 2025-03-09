@@ -37,7 +37,7 @@ TIME_ZONE = 'America/Lima'  # Cambia esto según tu país
 USE_TZ = True
 CORS_ALLOW_ALL_ORIGINS = True  # O restringirlo a dominios específicos
 # Application definition
-
+ALLOWED_HOSTS = ['*']  # Por ahora, para pruebas
 INSTALLED_APPS = [
     'django.contrib.admin',
     'django.contrib.auth',
@@ -166,6 +166,12 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 
 import os
+import os
+
+PORT = os.getenv('PORT', '8000')
+ALLOWED_HOSTS = ['*']  # Por ahora, para pruebas
+WSGI_APPLICATION = 'admin_alumnos.wsgi.application'  # Asegúrate que sea el nombre correcto
+
 
 MEDIA_URL = '/media/'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
