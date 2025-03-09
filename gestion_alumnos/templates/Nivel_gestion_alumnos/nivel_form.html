@@ -1,0 +1,52 @@
+{% extends 'mi_app/base.html' %}
+
+{% block content %}
+<div class="container mt-4">
+    <h2 class="mb-4">{% if object %}Editar Nivel{% else %}Nuevo Nivel{% endif %}</h2>
+
+    <form method="post" enctype="multipart/form-data" class="mt-3">
+        {% csrf_token %}
+        
+        <div class="mb-3">
+            <label for="id_nombre" class="form-label">Nombre del Nivel</label>
+            {{ form.nombre }}
+        </div>
+
+        <div class="mb-3">
+            <label for="id_codigo" class="form-label">Código del Nivel</label>
+            {{ form.codigo }}
+        </div>
+
+        <div class="mb-3">
+            <label for="id_descripcion" class="form-label">Descripción</label>
+            {{ form.descripcion }}
+        </div>
+
+        <div class="mb-3">
+            <label for="id_estado" class="form-label">Estado</label>
+            {{ form.estado }}
+        </div>
+
+        <div class="mb-3">
+            <label for="id_años_duracion" class="form-label">Años de Duración</label>
+            {{ form.años_duracion }}
+        </div>
+
+        <div class="mb-3">
+            <label for="id_imagen" class="form-label">Imagen</label>
+            {{ form.imagen }}
+            <small class="form-text text-muted">La imagen es opcional</small>
+        </div>
+
+        <div class="mb-3">
+            <label for="id_fecha_creacion" class="form-label">Fecha de Creación</label>
+            <input type="text" class="form-control" value="{{ object.fecha_creacion }}" readonly>
+        </div>
+
+        <button type="submit" class="btn btn-success btn-lg shadow-sm">
+            {% if object %}Actualizar{% else %}Guardar{% endif %}
+        </button>
+        <a href="{% url 'nivel_list' %}" class="btn btn-secondary btn-lg shadow-sm">Cancelar</a>
+    </form>
+</div>
+{% endblock %}

@@ -1,0 +1,280 @@
+{% extends 'mi_app/base.html' %}
+
+{% block content %}
+{% load static %}
+
+<!-- Estilos personalizados -->
+<style>
+    body {
+        background-color: #dfe6e9;
+        font-family: "Times New Roman", Times, serif;
+    }
+
+    .player-container {
+        border-radius: 15px;
+        background-color: #ffffff;
+        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+        padding: 20px;
+        margin-bottom: 20px;
+    }
+
+    .btn-primary {
+        background-color: #3498db;
+        border-color: #3498db;
+    }
+
+    .btn-primary:hover {
+        background-color: #2980b9;
+        border-color: #2980b9;
+    }
+
+    .btn-success {
+        background-color: #2ecc71;
+        border-color: #2ecc71;
+    }
+
+    .btn-success:hover {
+        background-color: #27ae60;
+        border-color: #27ae60;
+    }
+
+    .form-range {
+        width: 80%;
+        margin: 20px 0;
+    }
+
+    .player-container h2 {
+        color: #2c3e50;
+        margin-bottom: 20px;
+    }
+
+    .controls button {
+        font-size: 1.5rem;
+        padding: 10px;
+    }
+
+    .audio-player-wrapper {
+        margin-bottom: 15px;
+    }
+
+    .song-list ul {
+        list-style-type: none;
+        padding: 0;
+    }
+
+    .song-list li {
+        padding: 5px;
+        cursor: pointer;
+        font-size: 1.2rem;
+        transition: background-color 0.3s;
+    }
+
+    .song-list li:hover {
+        background-color: #f1f1f1;
+    }
+
+    .song-list li.active {
+        background-color: #2980b9;
+        color: white;
+    }
+
+    .search-container {
+        margin-bottom: 20px;
+    }
+
+    .pagination {
+        display: flex;
+        justify-content: center;
+        margin-top: 20px;
+    }
+
+    .pagination .page-link {
+        border-radius: 50%;
+    }
+</style>
+
+<div class="container my-4">
+    <div class="row">
+        <!-- Columna del reproductor de música -->
+        <div class="col-md-6">
+            <div class="player-container text-center">
+                <h2>🎵 Reproductor de Música</h2>
+
+                <!-- Reproductor de audio -->
+                <div class="audio-player-wrapper">
+                    <audio id="audio-player" class="w-100" controls>
+                        Tu navegador no soporta el elemento de audio.
+                    </audio>
+                </div>
+
+                <!-- Controles del reproductor -->
+               <div class="my-3">
+    <button id="prev" class="btn btn-primary mx-2">⏮️</button>
+    <button id="play-pause" class="btn btn-success mx-2">▶️</button>
+    <button id="next" class="btn btn-primary mx-2">⏭️</button>
+</div>
+
+<script>
+    // Variables para el reproductor y la lista de canciones
+    const audioPlayer = document.getElementById('audio-player');
+    const playPauseBtn = document.getElementById('play-pause');
+    const prevBtn = document.getElementById('prev');
+    const nextBtn = document.getElementById('next');
+    const songList = document.querySelectorAll('.song-list li');
+    let currentSongIndex = 0;
+
+    // Cargar la canción en el reproductor cuando se haga clic en una canción
+    function cargarCancion(index) {
+        currentSongIndex = index;
+        const song = songList[index];
+        const songUrl = song.getAttribute('data-url');
+        audioPlayer.src = songUrl;
+        audioPlayer.play();
+        actualizarBotonPlayPause();
+        resaltarCancion();
+    }
+
+    // Actualizar el botón de Play/Pause según el estado del reproductor
+    function actualizarBotonPlayPause() {
+        if (audioPlayer.paused) {
+            playPauseBtn.textContent = '▶️'; // Si está pausado, mostrar 'Play'
+        } else {
+            playPauseBtn.textContent = '⏸️'; // Si está reproduciendo, mostrar 'Pause'
+        }
+    }
+
+    // Función para resaltar la canción activa
+    function resaltarCancion() {
+        songList.forEach((item, index) => {
+            if (index === currentSongIndex) {
+                item.classList.add('active');
+            } else {
+                item.classList.remove('active');
+            }
+        });
+    }
+
+    // Función para reproducir/pausar la canción actual
+    function togglePlayPause() {
+        if (audioPlayer.paused) {
+            audioPlayer.play();
+        } else {
+            audioPlayer.pause();
+        }
+        actualizarBotonPlayPause();
+    }
+
+    // Función para ir a la canción anterior
+    function anterior() {
+        if (currentSongIndex > 0) {
+            cargarCancion(currentSongIndex - 1);
+        } else {
+            cargarCancion(songList.length - 1); // Si está en la primera canción, ir a la última
+        }
+    }
+
+    // Función para ir a la canción siguiente
+    function siguiente() {
+        if (currentSongIndex < songList.length - 1) {
+            cargarCancion(currentSongIndex + 1);
+        } else {
+            cargarCancion(0); // Si está en la última canción, ir a la primera
+        }
+    }
+
+    // Event listeners para los botones
+    playPauseBtn.addEventListener('click', togglePlayPause);
+    prevBtn.addEventListener('click', anterior);
+    nextBtn.addEventListener('click', siguiente);
+
+    // Asignar un evento click a cada canción en la lista
+    songList.forEach((songItem, index) => {
+        songItem.addEventListener('click', () => cargarCancion(index));
+        songItem.setAttribute('data-url', songItem.textContent); // Agregar la URL de la canción
+    });
+
+    // Inicializar con la primera canción
+    if (songList.length > 0) {
+        cargarCancion(0);
+    }
+</script>
+
+                <!-- Control de volumen -->
+                <div>
+                    <label for="volume" class="form-label">Volumen</label>
+                    <input type="range" id="volume" class="form-range" min="0" max="1" step="0.1">
+                </div>
+
+                <!-- Duración de la canción -->
+                <div>
+                    <span id="current-time">00:00</span> / <span id="duration">00:00</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Columna del listado de canciones -->
+        <div class="col-md-6">
+            <div class="song-list">
+                <!-- Filtro de búsqueda -->
+                <div class="search-container">
+                    <form method="get" action="{% url 'reproductor_mp3' %}">
+                        <input type="text" name="filtro" value="{{ filtro }}" class="form-control" placeholder="Buscar canción..." />
+                    </form>
+                </div>
+
+                <h4>Lista de Canciones</h4>
+                <ul>
+                    {% for cancion in page_obj %}
+                        <li onclick="cargarCancion('{{ cancion }}')" class="{% if forloop.first %}active{% endif %}">
+                            {{ cancion|slice:":-4" }}
+                        </li>
+                    {% empty %}
+                        <li>No se encontraron canciones.</li>
+                    {% endfor %}
+                </ul>
+
+                <!-- Paginación -->
+                <div class="pagination">
+                    <span class="page-link">
+                        {% if page_obj.has_previous %}
+                            <a href="?page=1">&laquo; Primero</a>
+                        {% endif %}
+                    </span>
+                    <span class="page-link">
+                        {% if page_obj.has_previous %}
+                            <a href="?page={{ page_obj.previous_page_number }}">Anterior</a>
+                        {% endif %}
+                    </span>
+                    <span class="page-link">
+                        {% if page_obj.has_next %}
+                            <a href="?page={{ page_obj.next_page_number }}">Siguiente</a>
+                        {% endif %}
+                    </span>
+                    <span class="page-link">
+                        {% if page_obj.has_next %}
+                            <a href="?page={{ page_obj.paginator.num_pages }}">Último &raquo;</a>
+                        {% endif %}
+                    </span>
+                </div>
+
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Función para cargar una canción y resaltar la activa
+    function cargarCancion(url) {
+        // Cambiar el audio del reproductor
+        document.getElementById('audio-player').src = url;
+
+        // Resaltar la canción activa en la lista
+        const listItems = document.querySelectorAll('.song-list li');
+        listItems.forEach(item => {
+            item.classList.remove('active');
+        });
+        event.target.classList.add('active');
+    }
+</script>
+
+{% endblock %}

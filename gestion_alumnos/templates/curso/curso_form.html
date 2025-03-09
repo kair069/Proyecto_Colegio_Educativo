@@ -1,0 +1,36 @@
+{% extends 'mi_app/base.html' %}
+
+{% block content %}
+<div class="container mt-4">
+    <h2>{% if form.instance.pk %}✏ Editar Curso{% else %}🆕 Nuevo Curso{% endif %}</h2>
+
+    <form method="post" enctype="multipart/form-data" class="needs-validation" novalidate>
+        {% csrf_token %}
+
+        <!-- Mostrar errores generales del formulario -->
+        {% if form.non_field_errors %}
+            <div class="alert alert-danger">
+                {{ form.non_field_errors }}
+            </div>
+        {% endif %}
+
+        <div class="mb-3">
+            <label for="{{ form.grado.id_for_label }}" class="form-label">Grado</label>
+            {{ form.grado }}
+        </div>
+
+        <div class="mb-3">
+            <label for="{{ form.nombre.id_for_label }}" class="form-label">Nombre del Curso</label>
+            {{ form.nombre }}
+        </div>
+
+        <div class="mb-3">
+            <label for="{{ form.descripcion.id_for_label }}" class="form-label">Descripción</label>
+            {{ form.descripcion }}
+        </div>
+
+        <button type="submit" class="btn btn-success">✅ Guardar</button>
+        <a href="{% url 'curso_list' %}" class="btn btn-secondary">❌ Cancelar</a>
+    </form>
+</div>
+{% endblock %}

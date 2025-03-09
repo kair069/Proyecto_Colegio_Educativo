@@ -1,0 +1,155 @@
+{% extends "mi_app/base.html" %}
+
+{% block content %}
+<div class="container mt-4">
+    <h2 class="mb-4 text-center">Gestión de Horarios</h2>
+
+    <a href="{% url 'agregar_horario' %}" class="btn btn-success mb-3">Agregar Horario</a>
+
+    <!-- Formulario de filtros con actualización automática -->
+    <form id="filtro-form" class="mb-4">
+        <div class="row">
+            <div class="col-md-2">
+                <label class="form-label">Docente:</label>
+                <select name="docente" id="docente" class="form-control">
+                    <option value="">Todos</option>
+                    {% for docente in docentes %}
+                        <option value="{{ docente.id }}">{{ docente }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <div class="col-md-2">
+                <label class="form-label">Curso:</label>
+                <select name="curso_asignado" id="curso_asignado" class="form-control">
+                    <option value="">Todos</option>
+                    {% for curso in cursos %}
+                        <option value="{{ curso.id }}">{{ curso }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <div class="col-md-2">
+                <label class="form-label">Día:</label>
+                <select name="dia" id="dia" class="form-control">
+                    <option value="">Todos</option>
+                    {% for dia in dias_semana %}
+                        <option value="{{ dia.0 }}">{{ dia.1 }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <div class="col-md-2">
+                <label class="form-label">Hora Inicio:</label>
+                <input type="time" name="hora_inicio" id="hora_inicio" class="form-control">
+            </div>
+
+            <div class="col-md-2">
+                <label class="form-label">Hora Fin:</label>
+                <input type="time" name="hora_fin" id="hora_fin" class="form-control">
+                <small id="hora-error" class="text-danger" style="display: none;">
+                    La hora de fin debe ser mayor que la de inicio
+                </small>
+            </div>
+        </div>
+    </form>
+
+    <!-- Tabla de horarios -->
+    <div class="table-responsive">
+        <table class="table table-bordered table-hover">
+            <thead class="thead-dark">
+                <tr>
+                    <th>Docente</th>
+                    <th>Curso</th>
+                    <th>Día</th>
+                    <th>Hora Inicio</th>
+                    <th>Hora Fin</th>
+                    <th>Acciones</th>
+                </tr>
+            </thead>
+            <tbody id="tabla-horarios">
+                {% for horario in horarios %}
+                <tr>
+                    <td>{{ horario.docente }}</td>
+                    <td>{{ horario.curso_asignado }}</td>
+                    <td>{{ horario.dia }}</td>
+                    <td>{{ horario.hora_inicio }}</td>
+                    <td>{{ horario.hora_fin }}</td>
+                    <td>
+                        <a href="{% url 'editar_horario' horario.id %}" class="btn btn-warning btn-sm">Editar</a>
+                        <form action="{% url 'eliminar_horario' horario.id %}" method="POST" style="display:inline;">
+                            {% csrf_token %}
+                            <button type="submit" class="btn btn-danger btn-sm">Eliminar</button>
+                        </form>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="6" class="text-center">No hay horarios disponibles.</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<!-- JavaScript para filtros y validaciones -->
+<script>
+document.addEventListener("DOMContentLoaded", function() {
+    const form = document.getElementById("filtro-form");
+    const horaInicio = document.getElementById("hora_inicio");
+    const horaFin = document.getElementById("hora_fin");
+    const errorMsg = document.getElementById("hora-error");
+
+    // Detectar cambios en los filtros y actualizar la tabla
+    form.addEventListener("change", function() {
+        actualizarTabla();
+    });
+
+    // Validar y autocompletar horas
+    horaInicio.addEventListener("change", function() {
+        if (horaInicio.value) {
+            // Autocompletar hora fin con 1 hora más si no se ha seleccionado
+            if (!horaFin.value) {
+                let [h, m] = horaInicio.value.split(":");
+                h = parseInt(h) + 1;
+                if (h < 10) h = "0" + h;
+                horaFin.value = `${h}:${m}`;
+            }
+            validarHoras();
+        }
+    });
+
+    horaFin.addEventListener("change", validarHoras);
+
+    function validarHoras() {
+        if (horaInicio.value && horaFin.value) {
+            if (horaFin.value <= horaInicio.value) {
+                errorMsg.style.display = "block";
+                horaFin.classList.add("is-invalid");
+            } else {
+                errorMsg.style.display = "none";
+                horaFin.classList.remove("is-invalid");
+            }
+        }
+    }
+
+    function actualizarTabla() {
+        const formData = new FormData(form);
+        const params = new URLSearchParams(formData).toString();
+
+        fetch("{% url 'listar_horarios' %}?" + params, {
+            headers: { "X-Requested-With": "XMLHttpRequest" }
+        })
+        .then(response => {
+            if (!response.ok) throw new Error("Error al cargar los datos");
+            return response.text();
+        })
+        .then(data => {
+            document.getElementById("tabla-horarios").innerHTML = data;
+        })
+        .catch(error => console.error("Error:", error));
+    }
+});
+</script>
+{% endblock %}

@@ -1,0 +1,27 @@
+{% extends 'mi_app/base.html' %}
+{% block content %}
+<div class="container mt-4">
+    <h2 class="mb-3">{% if form.instance.pk %}Editar{% else %}Agregar{% endif %} Alumno</h2>
+    <form method="post">
+        {% csrf_token %}
+        <div class="mb-3">
+            <label for="id_nombre" class="form-label">Nombre</label>
+            {{ form.nombre }}
+        </div>
+        <div class="mb-3">
+            <label for="id_apellido" class="form-label">Apellido</label>
+            {{ form.apellido }}
+        </div>
+        <div class="mb-3">
+            <label for="id_dni" class="form-label">DNI</label>
+            {{ form.dni }}
+        </div>
+        <div class="mb-3">
+            <label for="id_seccion" class="form-label">Sección</label>
+            {{ form.seccion }}
+        </div>
+        <button type="submit" class="btn btn-success">Guardar</button>
+        <a href="{% url 'alumno_list' %}" class="btn btn-secondary">Cancelar</a>
+    </form>
+</div>
+{% endblock %}

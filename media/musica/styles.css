@@ -1,0 +1,39 @@
+body {
+    font-family: Arial, sans-serif;
+    text-align: center;
+    background-color: #222;
+    color: white;
+    padding: 20px;
+}
+
+.player-container {
+    background: #333;
+    padding: 20px;
+    border-radius: 10px;
+    display: inline-block;
+    box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.5);
+}
+
+.controls {
+    margin-top: 10px;
+}
+
+button {
+    font-size: 20px;
+    margin: 5px;
+    padding: 10px;
+    border: none;
+    cursor: pointer;
+    background-color: #555;
+    color: white;
+    border-radius: 5px;
+}
+
+button:hover {
+    background-color: #777;
+}
+
+#volume {
+    margin-top: 10px;
+    width: 50%;
+}

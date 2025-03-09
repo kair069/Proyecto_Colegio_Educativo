@@ -1,0 +1,40 @@
+{% extends 'mi_app/base.html' %}
+
+{% block content %}
+<div class="container mt-4">
+    <h2 class="mb-3">{% if form.instance.pk %}✏️ Editar{% else %}➕ Agregar{% endif %} Detalles del Alumno</h2>
+
+    <div class="card">
+        <div class="card-header bg-primary text-white">
+            📌 Información del Alumno
+        </div>
+        <div class="card-body">
+            <p><strong>Nombre:</strong> {{ alumno.nombre }} {{ alumno.apellido }}</p>
+            <p><strong>DNI:</strong> {{ alumno.dni }}</p>
+            <p><strong>Sección:</strong> {{ alumno.seccion.nombre }}</p>
+        </div>
+    </div>
+
+    <div class="card mt-3">
+        <div class="card-header bg-success text-white">
+            📝 Formulario de Detalles
+        </div>
+        <div class="card-body">
+            <form method="post" enctype="multipart/form-data">
+                {% csrf_token %}
+                
+                {% for field in form %}
+                <div class="mb-3">
+                    <label class="form-label"><strong>{{ field.label }}:</strong></label>
+                    {{ field }}
+                </div>
+                {% endfor %}
+
+                <!-- Botones -->
+                <button type="submit" class="btn btn-success">💾 Guardar</button>
+                <a href="{% url 'ver_detalle_alumno' alumno.id %}" class="btn btn-secondary">⬅ Cancelar</a>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

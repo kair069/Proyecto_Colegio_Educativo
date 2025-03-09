@@ -1,0 +1,36 @@
+{% extends 'mi_app/base.html' %}
+
+{% block content %}
+<div class="container mt-4">
+    <h2>Cursos Asignados</h2>
+    <a href="{% url 'curso_asignado_create' %}" class="btn btn-primary mb-3">Asignar Nuevo Curso</a>
+    
+    <table class="table table-bordered">
+        <thead class="table-dark">
+            <tr>
+                <th>Curso</th>
+                <th>Sección</th>
+                <th>Docente</th>
+                <th>Acciones</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for curso_asignado in cursos_asignados %}
+            <tr>
+                <td>{{ curso_asignado.curso }}</td>
+                <td>{{ curso_asignado.seccion }}</td>
+                <td>{{ curso_asignado.docente }}</td>
+                <td>
+                    <a href="{% url 'curso_asignado_update' curso_asignado.pk %}" class="btn btn-warning btn-sm">Editar</a>
+                    <a href="{% url 'curso_asignado_delete' curso_asignado.pk %}" class="btn btn-danger btn-sm">Eliminar</a>
+                </td>
+            </tr>
+            {% empty %}
+            <tr>
+                <td colspan="4" class="text-center">No hay cursos asignados.</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}

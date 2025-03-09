@@ -1,0 +1,25 @@
+{% extends 'mi_app/base.html' %}
+{% block content %}
+<h2>Pase de Asistencia - {{ curso_asignado.curso.nombre }}</h2>
+<form method="POST">
+    {% csrf_token %}
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Alumno</th>
+                <th>Estado</th>
+            </tr>
+        </thead>
+        <tbody>
+            {{ formset.management_form }}
+            {% for form in formset %}
+                <tr>
+                    <td>{{ form.instance.alumno }}</td>
+                    <td>{{ form.estado }}</td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    <button type="submit" class="btn btn-primary">Guardar Asistencias</button>
+</form>
+{% endblock %}

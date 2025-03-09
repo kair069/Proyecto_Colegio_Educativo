@@ -1,0 +1,81 @@
+{% extends "mi_app/base.html" %}
+
+{% block content %}
+<div class="container mt-4">
+    <h2>Pasar asistencia - {{ curso_asignado.curso.nombre }} ({{ curso_asignado.seccion }})</h2>
+    {% comment %} <p><strong>Periodo:</strong> {{ periodo.nombre }}</p> {% endcomment %}
+    <p><strong>Desde:</strong> {{ periodo.fecha_inicio|date:"d/m/Y" }} hasta {{ periodo.fecha_fin|date:"d/m/Y" }}</p>
+
+    <!-- Selector de fecha -->
+    <form method="get" class="mb-3 d-flex gap-2">
+        <label for="fecha" class="form-label"><strong>Seleccionar fecha:</strong></label>
+        <input type="date" id="fecha" name="fecha" class="form-control w-auto" value="{{ fecha_asistencia|date:'Y-m-d' }}">
+        <button type="submit" class="btn btn-secondary">Cambiar fecha</button>
+    </form>
+
+    <!-- Selector de hora -->
+    <form method="post" id="asistencia-form">
+        {% csrf_token %}
+
+        <div class="mb-3">
+            <label for="hora" class="form-label"><strong>Seleccionar hora:</strong></label>
+            <input type="time" id="hora" name="hora" class="form-control w-auto" value="{{ current_time|time:'H:i' }}">
+        </div>
+
+        <table class="table table-bordered mt-3">
+            <thead class="table-dark">
+                <tr>
+                    <th>Alumno</th>
+                    <th>Estado</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for alumno in alumnos %}
+                <tr>
+                    <td>{{ alumno.nombre }} {{ alumno.apellido }}</td>
+                    <td>
+                        <select name="estado_{{ alumno.id }}" class="form-select">
+                            <option value="Presente">✅ Presente</option>
+                            <option value="Tarde">⏳ Tarde</option>
+                            <option value="Ausente">❌ Ausente</option>
+                        </select>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="2" class="text-center">No hay alumnos en esta sección.</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+
+        <button type="submit" class="btn btn-primary">Guardar asistencia</button>
+    </form>
+
+    <!-- Mensaje de éxito -->
+    <div id="mensaje-exito" class="alert alert-success mt-3 d-none">
+        ✅ Asistencia guardada con éxito.
+    </div>
+</div>
+
+<!-- Script para mostrar mensaje de éxito y validar envío -->
+<script>
+    document.getElementById("asistencia-form").addEventListener("submit", function(event) {
+        event.preventDefault();  // Evita el envío inmediato del formulario
+        let form = this;
+
+        // Verifica que la hora no esté vacía
+        let horaInput = document.getElementById("hora").value;
+        if (!horaInput) {
+            alert("Por favor, seleccione una hora válida.");
+            return;
+        }
+
+        // Simulación de guardado con retraso
+        setTimeout(function() {
+            document.getElementById("mensaje-exito").classList.remove("d-none");
+            setTimeout(() => form.submit(), 500); // Envía el formulario después de mostrar el mensaje
+        }, 500);
+    });
+</script>
+{% endblock %}

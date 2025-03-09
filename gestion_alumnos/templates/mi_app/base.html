@@ -1,0 +1,274 @@
+    {% load static %}
+    <!DOCTYPE html>
+    <html lang="es">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>{% block title %}Sistema Escolar{% endblock %}</title>
+        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+        <style>
+            body {
+                background-color: #dfe6e9;
+                font-family: "Times New Roman", Times, serif;
+            }
+            .navbar {
+                background-color: rgb(17, 169, 224) !important;
+            }
+            .navbar:hover {
+                background-color: rgb(31, 146, 213) !important;
+            }
+            .container {
+                opacity: 0;
+                transform: translateY(-10px);
+                animation: fadeInMove 0.6s forwards;
+            }
+            @keyframes fadeInMove {
+                    from { opacity: 0; transform: translateY(-20px); }
+                    to { opacity: 1; transform: translateY(0); }
+                }
+            /* Estilos flotantes */
+                .floating-card {
+                    position: fixed;
+                    background: linear-gradient(135deg, #74b9ff, #0984e3);
+                    color: white;
+                    border-radius: 15px;
+                    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.3);
+                    padding: 15px;
+                    text-align: center;
+                    user-select: none;
+                    cursor: grab;
+                    animation: fadeInMove 0.8s forwards;
+                }
+            @keyframes fadeInMove {
+                from { opacity: 0; transform: translateY(-20px); }
+                to { opacity: 1; transform: translateY(0); }
+            }
+            /* Reloj */
+            #clock-card {
+                top: 700px;
+                left:1450px;
+                width: 230px;
+            }
+            #clock-title { font-size: 1.2rem; font-weight: bold; }
+            #fecha { font-size: 0.9rem; opacity: 0.8; }
+            /* Reproductor MP3 */
+           
+        </style>
+    </head>
+    <body>
+
+        <!-- Barra de navegación -->
+<nav class="navbar navbar-expand-lg navbar-dark shadow-sm">
+    <div class="container-fluid">
+        <a class="navbar-brand fw-bold" href="{% url 'home' %}">🏫 Sistema Escolar</a>
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" 
+                aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        
+        <div class="collapse navbar-collapse" id="navbarNav">
+            <ul class="navbar-nav ms-auto">
+                <li class="nav-item"><a class="nav-link" href="{% url 'nivel_list' %}">📚 Niveles</a></li>
+                <li class="nav-item"><a class="nav-link" href="{% url 'grado_list' %}">🎓 Grados</a></li>
+                <li class="nav-item"><a class="nav-link" href="{% url 'seccion_list' %}">🏫 Secciones</a></li>
+                <li class="nav-item"><a class="nav-link" href="{% url 'periodo_list' %}">📆 Periodos</a></li>
+                <li class="nav-item"><a class="nav-link" href="{% url 'alumno_list' %}">👨‍🎓 Alumnos</a></li>
+                
+                <!-- Dropdown Docentes -->
+                <li class="nav-item dropdown position-relative">
+                    <a class="nav-link dropdown-toggle" href="#" id="docenteDropdown" role="button" data-bs-toggle="dropdown">
+                        🏫 Gestión Docente
+                    </a>
+                    <ul class="dropdown-menu" aria-labelledby="docenteDropdown">
+                        <li><a class="dropdown-item" href="{% url 'docente_list' %}">👩‍🏫 Todos los Docentes</a></li>
+                        <li><a class="dropdown-item" href="{% url 'listar_horarios' %}">🕒 Horarios Docentes</a></li>
+                        <li><a class="dropdown-item" href="{% url 'ver_horarios' %}">🕒 Ver Horarios Docentes</a></li>
+                        <li><a class="dropdown-item" href="{% url 'agregar_horario_profesor' %}">🕒 Horario por docente</a></li>
+                    </ul>
+                </li>
+
+                <li class="nav-item"><a class="nav-link" href="{% url 'calendario' %}">📅 Calendario Académico</a></li>
+                
+                <!-- Dropdown Cursos -->
+                <li class="nav-item dropdown position-relative">
+                    <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-bs-toggle="dropdown">
+                        📖 Cursos
+                    </a>
+                    <ul class="dropdown-menu" aria-labelledby="navbarDropdown">
+                        <li><a class="dropdown-item" href="{% url 'curso_list' %}">📚 Todos los Cursos</a></li>
+                        <li><a class="dropdown-item" href="{% url 'curso_asignado_list' %}">📝 Cursos Asignados</a></li>
+                    </ul>
+                </li>
+
+                <li class="nav-item"><a class="nav-link" href="{% url 'unidad_list' %}">📘 Unidades</a></li>
+                <li class="nav-item"><a class="nav-link" href="{% url 'tema_list' %}">📖 Temas</a></li>
+                
+                <!-- Dropdown Asistencia -->
+                <li class="nav-item dropdown position-relative">
+                    <a class="nav-link dropdown-toggle" href="#" id="asistDropdown" role="button" data-bs-toggle="dropdown">
+                        ✅ Asistencia
+                    </a>
+                    <ul class="dropdown-menu" aria-labelledby="asistDropdown">
+                        <li><a class="dropdown-item" href="{% url 'seleccionar_curso_asistencia' %}">📋 Pasar Asistencia</a></li>
+                        <li><a class="dropdown-item" href="{% url 'listar_asistencias' %}">📄 Listar Asistencia</a></li>
+                    </ul>
+                </li>
+
+                <li class="nav-item"><a class="nav-link" href="{% url 'trabajo_list' %}">📂 Trabajos</a></li>
+                <li class="nav-item"><a class="nav-link" href="{% url 'calificacion_list' %}">📊 Calificaciones</a></li>
+                
+                <li class="nav-item">
+                    <a class="nav-link btn btn-light text-dark px-3" href="{% url 'seleccionar_trabajo' %}">
+                        📄 Seleccionar Trabajo
+                    </a>
+                </li>
+                <li class="nav-item"><a class="nav-link" href="{% url 'reproductor_mp3' %}">🎵 Reproductor</a></li>
+
+             <!-- Mostrar nombre de usuario si está logueado -->
+{% if user.is_authenticated %}
+    <li class="nav-item">
+        <a class="nav-link" href="#">{{ user.username }}</a>
+    </li>
+    <li class="nav-item">
+        <form method="post" action="{% url 'logout' %}">
+            {% csrf_token %}
+            <button type="submit" class="btn btn-danger nav-link" style="border: none; background: none;">Cerrar sesión</button>
+        </form>
+    </li>
+{% else %}
+    <li class="nav-item">
+        <a class="nav-link" href="{% url 'login' %}">Iniciar sesión</a>
+    </li>
+{% endif %}
+
+            </ul>
+        </div>
+    </div>
+</nav>
+
+
+        <!-- Mensajes Flash -->
+        <div class="container mt-3">
+            {% if messages %}
+                {% for message in messages %}
+                    <div class="alert alert-{{ message.tags }} alert-dismissible fade show text-center">
+                        {{ message }}
+                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                    </div>
+                {% endfor %}
+            {% endif %}
+        </div>
+
+        
+
+        <!-- Contenido Dinámico -->
+        <div class="container mt-4">
+            {% block content %}
+            {% endblock %}
+        </div>
+     
+
+        
+
+        <!-- Reloj Flotante -->
+        <div id="clock-card" class="floating-card">
+            <div id="clock-title">⏰ Hora Actual</div>
+            <div id="fecha"></div>
+            <div id="hora"></div>
+        </div>
+
+    
+
+        <!-- Scripts para cargar contenido dinámico y funcionalidades -->
+        <script>
+            function cargarContenido(url) {
+                console.log("Cargando contenido desde:", url);
+                fetch(url)
+                    .then(response => response.text())
+                    .then(data => {
+                        console.log("Contenido recibido:", data);
+                        document.getElementById("contenido-dinamico").innerHTML = data;
+                    })
+                    .catch(error => console.error("Error al cargar el contenido:", error));
+            }
+        </script>
+
+        <script>
+            document.addEventListener("DOMContentLoaded", function () {
+                // Reproductor de audio
+                let audioPlayer = document.getElementById("audio-player");
+                let audioSource = document.getElementById("audio-source");
+                let songLinks = document.querySelectorAll(".song-link");
+
+                songLinks.forEach(link => {
+                    link.addEventListener("click", function (e) {
+                        e.preventDefault();
+                        let songUrl = this.getAttribute("data-src");
+                        audioSource.src = songUrl;
+                        audioPlayer.load();
+                        audioPlayer.play();
+                    });
+                });
+            });
+        </script>
+
+        <script>
+            function actualizarReloj() {
+                let ahora = new Date();
+                document.getElementById("fecha").innerText = ahora.toLocaleDateString();
+                document.getElementById("hora").innerText = ahora.toLocaleTimeString();
+            }
+            setInterval(actualizarReloj, 1000);
+            actualizarReloj();
+        </script>
+
+        <script>
+            function hacerArrastrable(elemento) {
+                let offsetX, offsetY, arrastrando = false;
+                elemento.addEventListener("mousedown", (e) => {
+                    arrastrando = true;
+                    offsetX = e.clientX - elemento.getBoundingClientRect().left;
+                    offsetY = e.clientY - elemento.getBoundingClientRect().top;
+                    elemento.style.cursor = "grabbing";
+                });
+                document.addEventListener("mousemove", (e) => {
+                    if (!arrastrando) return;
+                    elemento.style.left = `${e.clientX - offsetX}px`;
+                    elemento.style.top = `${e.clientY - offsetY}px`;
+                });
+                document.addEventListener("mouseup", () => {
+                    arrastrando = false;
+                    elemento.style.cursor = "grab";
+                });
+                // Soporte táctil
+                elemento.addEventListener("touchstart", (e) => {
+                    arrastrando = true;
+                    let touch = e.touches[0];
+                    offsetX = touch.clientX - elemento.getBoundingClientRect().left;
+                    offsetY = touch.clientY - elemento.getBoundingClientRect().top;
+                });
+                document.addEventListener("touchmove", (e) => {
+                    if (!arrastrando) return;
+                    let touch = e.touches[0];
+                    elemento.style.left = `${touch.clientX - offsetX}px`;
+                    elemento.style.top = `${touch.clientY - offsetY}px`;
+                });
+                document.addEventListener("touchend", () => {
+                    arrastrando = false;
+                });
+            }
+
+            hacerArrastrable(document.getElementById("clock-card"));
+            hacerArrastrable(document.getElementById("music-card"));
+            hacerArrastrable(document.getElementById("movible-widget"));
+        </script>
+
+        <script>
+            document.getElementById("close-music-card").addEventListener("click", () => {
+                document.getElementById("music-card").style.display = "none";
+            });
+        </script>
+
+    </body>
+    </html>

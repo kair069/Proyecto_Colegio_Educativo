@@ -1,0 +1,26 @@
+{% extends "mi_app/base.html" %}
+{% load static %}
+
+{% block content %}
+<div class="container">
+    <h3 class="center-align blue-text text-darken-3">✏️ Editar Asistencia</h3>
+    
+    <div class="card-panel">
+        <form method="POST">
+            {% csrf_token %}
+            <div class="input-field">
+                {{ form.fecha.label_tag }}
+                {{ form.fecha }}
+            </div>
+            <div class="input-field">
+                {{ form.estado.label_tag }}
+                {{ form.estado }}
+            </div>
+            <div class="center-align">
+                <button type="submit" class="btn blue darken-2 waves-effect waves-light">💾 Guardar Cambios</button>
+                <a href="{% url 'listar_asistencias' %}" class="btn grey waves-effect">❌ Cancelar</a>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

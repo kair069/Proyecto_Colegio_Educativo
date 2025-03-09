@@ -1,0 +1,91 @@
+{% extends "mi_app/base.html" %}
+
+{% block content %}
+<div class="container mt-5">
+    <h2 class="text-center mb-4">
+        {% if form.instance.pk %} ✏️ Editar {% else %} 🆕 Nueva {% endif %} Calificación
+    </h2>
+
+    <form method="post" class="shadow-lg p-4 rounded bg-white border">
+        {% csrf_token %}
+
+        <div class="mb-3">
+            <label class="form-label">📄 {{ form.trabajo.label }}</label>
+            {{ form.trabajo }}
+        </div>
+        
+        <div class="mb-3">
+            <label class="form-label">🧑‍🎓 {{ form.alumno.label }}</label>
+            {{ form.alumno }}
+        </div>
+
+        <div class="mb-3">
+            <label class="form-label">📚 {{ form.curso_asignado.label }}</label>
+            {{ form.curso_asignado }}
+        </div>
+
+        <div class="mb-3">
+            <label class="form-label">📊 {{ form.nota.label }}</label>
+            <input type="range" class="form-range" id="notaRange" name="nota" min="0" max="20" step="0.1"
+                oninput="actualizarNota(this.value);" 
+                value="{{ form.nota.value|default:10 }}">
+            <output id="notaOutput" class="badge bg-primary fs-5 d-block text-center mt-2">{{ form.nota.value|default:10 }}</output>
+        </div>
+
+        <div class="mb-3">
+            <label class="form-label">💬 {{ form.comentarios.label }}</label>
+            {{ form.comentarios }}
+        </div>
+
+        <div class="mb-3">
+            <label class="form-label">📌 {{ form.estado.label }}</label>
+            {{ form.estado }}
+        </div>
+
+        <div class="mb-3">
+            <label class="form-label">📅 Fecha de Registro</label>
+            <input type="text" class="form-control bg-light" 
+                   value="{{ form.instance.fecha_registro|default:''|date:'Y-m-d H:i' }}" 
+                   readonly>
+        </div>
+
+        <div class="d-flex justify-content-between">
+            <button type="submit" class="btn btn-success btn-lg">
+                💾 Guardar
+            </button>
+            <a href="{% url 'calificacion_list' %}" class="btn btn-secondary btn-lg">
+                ❌ Cancelar
+            </a>
+        </div>
+    </form>
+</div>
+
+<!-- jQuery y Select2 -->
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<link href="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.13/css/select2.min.css" rel="stylesheet" />
+<script src="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.13/js/select2.min.js"></script>
+
+<script>
+    $(document).ready(function() {
+        // Aplicar select2 a los selects
+        $('select').addClass('select2').select2();
+
+        // Ajustar la barra de nota dinámicamente
+        let notaInput = document.getElementById("notaRange");
+        let notaOutput = document.getElementById("notaOutput");
+
+        function actualizarNota(valor) {
+            notaOutput.textContent = valor;
+            notaOutput.className = "badge fs-5 d-block text-center mt-2 " + 
+                (valor < 10 ? "bg-danger" : valor < 14 ? "bg-warning" : "bg-success");
+        }
+
+        if (notaInput) {
+            notaInput.addEventListener("input", function () {
+                actualizarNota(this.value);
+            });
+        }
+    });
+</script>
+
+{% endblock %}

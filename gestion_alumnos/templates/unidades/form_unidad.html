@@ -1,0 +1,14 @@
+{% extends "mi_app/base.html" %}
+
+{% block content %}
+<div class="container mt-4">
+    <h2 class="mb-3">{% if object %}Editar{% else %}Agregar{% endif %} Unidad</h2>
+    <form method="post" class="shadow p-4 bg-light rounded">
+        {% csrf_token %}
+        {{ form.media }}  <!-- Para CKEditor -->
+        {{ form.as_p }}
+        <button type="submit" class="btn btn-primary">Guardar</button>
+        <a href="{% url 'unidad_list' %}" class="btn btn-secondary">Cancelar</a>
+    </form>
+</div>
+{% endblock %}

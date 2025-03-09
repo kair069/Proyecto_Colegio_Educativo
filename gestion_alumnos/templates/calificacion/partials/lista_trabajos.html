@@ -1,0 +1,19 @@
+{% for trabajo in trabajos %}
+    <li class="list-group-item d-flex justify-content-between align-items-center 
+        {% if trabajo.es_proximo %}list-group-item-warning{% endif %}">
+        <div>
+            <strong>{{ trabajo.titulo }}</strong>
+            <small class="text-muted">({{ trabajo.fecha_entrega|date:"d M Y"|default:"Sin fecha" }})</small> <br>
+            <span class="badge bg-primary">{{ trabajo.curso_asignado.curso|default:"Sin curso" }}</span>
+            <span class="badge bg-secondary">Sección {{ trabajo.curso_asignado.seccion|default:"-" }}</span>
+            <span class="badge bg-info">Prof. {{ trabajo.curso_asignado.docente|default:"-" }}</span>
+        </div>
+        <a href="{% url 'calificar_trabajo' trabajo.id %}" class="btn btn-success btn-sm">
+            📝 Calificar
+        </a>
+    </li>
+{% empty %}
+    <li class="list-group-item text-center text-muted">
+        No hay trabajos disponibles.
+    </li>
+{% endfor %}

@@ -1,0 +1,18 @@
+{% extends 'mi_app/base.html' %}
+
+
+{% block content %}
+<div class="container mt-4">
+    <h2>¿Estás seguro de que deseas eliminar esta asignación?</h2>
+    
+    <p><strong>Curso:</strong> {{ curso_asignado.curso }}</p>
+    <p><strong>Sección:</strong> {{ curso_asignado.seccion }}</p>
+    <p><strong>Docente:</strong> {{ curso_asignado.docente }}</p>
+    
+    <form method="post">
+        {% csrf_token %}
+        <button type="submit" class="btn btn-danger">Eliminar</button>
+        <a href="{% url 'curso_asignado_list' %}" class="btn btn-secondary">Cancelar</a>
+    </form>
+</div>
+{% endblock %}

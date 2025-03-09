@@ -1,0 +1,11 @@
+{% extends "mi_app/base.html" %}
+
+{% block content %}
+<h2>{% if object %}Editar{% else %}Nuevo{% endif %} Trabajo</h2>
+<form method="post">
+    {% csrf_token %}
+    {{ form.as_p }}
+    <button type="submit" class="btn btn-success">Guardar</button>
+    <a href="{% url 'trabajo_list' %}" class="btn btn-secondary">Cancelar</a>
+</form>
+{% endblock %}

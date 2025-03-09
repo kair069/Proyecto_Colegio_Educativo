@@ -1,0 +1,52 @@
+{% extends "mi_app/base.html" %}
+
+{% block content %}
+<div class="container mt-4">
+    <h2 class="text-center fw-bold text-primary">📚 Lista de Temas</h2>
+
+    <div class="text-end mb-3">
+        <a href="{% url 'tema_create' %}" class="btn btn-success shadow-sm fw-bold">
+            ➕ Agregar Nuevo Tema
+        </a>
+    </div>
+
+    {% if temas %}
+        <div class="table-responsive">
+            <table class="table table-hover table-bordered align-middle text-center shadow-sm">
+                <thead class="table-dark">
+                    <tr>
+                        <th>🔢 #</th>
+                        <th>📌 Nombre</th>
+                        <th>📚 Unidad</th>
+                        <th>⚙️ Acciones</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for tema in temas %}
+                        <tr class="fw-semibold">
+                            <td>{{ tema.numero }}</td>
+                            <td class="text-start">📖 {{ tema.nombre }}</td>
+                            <td>🏛️ {{ tema.unidad.nombre }}</td>
+                            <td class="d-flex justify-content-center gap-2">
+                                <a href="{% url 'tema_detail' tema.pk %}" class="btn btn-info btn-sm shadow-sm">
+                                    👁️ Ver
+                                </a>
+                                <a href="{% url 'tema_update' tema.pk %}" class="btn btn-warning btn-sm shadow-sm">
+                                    ✏️ Editar
+                                </a>
+                                <a href="{% url 'tema_delete' tema.pk %}" class="btn btn-danger btn-sm shadow-sm">
+                                    🗑️ Eliminar
+                                </a>
+                            </td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    {% else %}
+        <div class="alert alert-warning text-center fw-bold shadow-sm">
+            ⚠️ No hay temas registrados. ¡Agrega uno para empezar! 📌
+        </div>
+    {% endif %}
+</div>
+{% endblock %}

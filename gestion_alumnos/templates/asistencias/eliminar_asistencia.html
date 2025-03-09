@@ -1,0 +1,17 @@
+{% extends "mi_app/base.html" %}
+{% load static %}
+
+{% block content %}
+<div class="container">
+    <h3 class="center-align red-text text-darken-3">⚠️ Eliminar Asistencia</h3>
+    
+    <div class="card-panel">
+        <p class="center-align">¿Estás seguro de que deseas eliminar la asistencia de <strong>{{ asistencia.alumno }}</strong>?</p>
+        <form method="POST" class="center-align">
+            {% csrf_token %}
+            <button type="submit" class="btn red darken-2 waves-effect waves-light">🗑️ Eliminar</button>
+            <a href="{% url 'listar_asistencias' %}" class="btn grey waves-effect">❌ Cancelar</a>
+        </form>
+    </div>
+</div>
+{% endblock %}

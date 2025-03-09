@@ -1,0 +1,66 @@
+{% extends 'mi_app/base.html' %}
+
+{% block content %}
+<div class="container mt-4">
+    <!-- Encabezado y botón de agregar -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2 class="fw-bold text-primary">📚 Lista de Niveles</h2>
+        <a href="{% url 'nivel_create' %}" class="btn btn-success btn-lg shadow-sm">
+            <i class="fas fa-plus-circle"></i> Agregar Nivel
+        </a>
+    </div>
+
+    {% if niveles %}
+        <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">
+            {% for nivel in niveles %}
+            <div class="col">
+                <div class="card shadow-lg border-0 rounded-lg h-100">
+                    <div class="card-body">
+                        <h5 class="card-title text-center text-primary">{{ nivel.nombre }}</h5>
+                        <p class="card-text text-muted small text-center">ID: {{ nivel.id }}</p>
+
+                        <!-- Descripción del nivel -->
+                        <p class="card-text">{{ nivel.descripcion|default:"Descripción no disponible" }}</p>
+
+                        <!-- Imagen del nivel -->
+                        {% if nivel.imagen %}
+                            <img src="{{ nivel.imagen.url }}" alt="Imagen del Nivel" class="img-fluid mb-3 rounded">
+                        {% else %}
+                            <p class="text-muted text-center">No hay imagen disponible</p>
+                        {% endif %}
+
+                        <!-- Estado del nivel -->
+                        <p class="text-center">
+                            <strong>Estado:</strong>
+                            {% if nivel.estado == 'Activo' %}
+                                <span class="badge bg-success">Activo</span>
+                            {% else %}
+                                <span class="badge bg-danger">Inactivo</span>
+                            {% endif %}
+                        </p>
+
+                        <!-- Botones de acción -->
+                        <div class="d-flex justify-content-between align-items-center mt-3">
+                            <a href="{% url 'nivel_update' nivel.id %}" class="btn btn-warning btn-sm shadow-sm">
+                                <i class="fas fa-edit"></i> Editar
+                            </a>
+                            <a href="{% url 'nivel_delete' nivel.id %}" class="btn btn-danger btn-sm shadow-sm" onclick="return confirm('¿Estás seguro de que deseas eliminar este nivel?');">
+                                <i class="fas fa-trash-alt"></i> Eliminar
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    {% else %}
+        <div class="alert alert-info text-center shadow-sm mt-4">
+            <i class="fas fa-info-circle"></i> No hay niveles registrados.
+        </div>
+    {% endif %}
+</div>
+
+<!-- Agregar FontAwesome para los íconos -->
+<script src="https://kit.fontawesome.com/a076d05399.js" crossorigin="anonymous"></script>
+
+{% endblock %}

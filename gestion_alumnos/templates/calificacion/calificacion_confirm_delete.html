@@ -1,0 +1,18 @@
+{% extends "mi_app/base.html" %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="alert alert-danger">
+        <h4>¿Estás seguro de que deseas eliminar esta calificación?</h4>
+        <p><strong>Trabajo:</strong> {{ calificacion.trabajo }}</p>
+        <p><strong>Alumno:</strong> {{ calificacion.alumno }}</p>
+        <p><strong>Nota:</strong> {{ calificacion.nota }}</p>
+        
+        <form method="post">
+            {% csrf_token %}
+            <button type="submit" class="btn btn-danger">Sí, eliminar</button>
+            <a href="{% url 'calificacion_list' %}" class="btn btn-secondary">Cancelar</a>
+        </form>
+    </div>
+</div>
+{% endblock %}

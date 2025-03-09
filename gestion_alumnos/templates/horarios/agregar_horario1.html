@@ -1,0 +1,109 @@
+{% extends 'mi_app/base.html' %}
+
+{% block content %}
+<div class="container mt-4">
+    <h2 class="text-center mb-4">📅 Agregar Horario para Docente</h2>
+
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+            <!-- Mensajes de validación -->
+            {% if messages %}
+                {% for message in messages %}
+                    <div class="alert {{ message.tags }} alert-dismissible fade show" role="alert">
+                        {{ message }}
+                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                    </div>
+                {% endfor %}
+            {% endif %}
+
+            <!-- Formulario -->
+            <form method="post" class="shadow p-4 rounded bg-white needs-validation" novalidate>
+                {% csrf_token %}
+                
+                <div class="mb-3">
+                    <label class="form-label">👨‍🏫 Docente:</label>
+                    {{ form.docente }}
+                    <div class="invalid-feedback">Por favor, selecciona un docente.</div>
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label">📚 Curso Asignado:</label>
+                    {{ form.curso_asignado }}
+                    <div class="invalid-feedback">Por favor, selecciona un curso.</div>
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label">📅 Día:</label>
+                    {{ form.dia }}
+                    <div class="invalid-feedback">Selecciona un día válido.</div>
+                </div>
+
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label">⏰ Hora Inicio:</label>
+                        {{ form.hora_inicio }}
+                        <div class="invalid-feedback">Elige una hora de inicio válida.</div>
+                    </div>
+
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label">⏳ Hora Fin:</label>
+                        {{ form.hora_fin }}
+                        <div class="invalid-feedback">Elige una hora de fin válida.</div>
+                    </div>
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label">🏫 Aula:</label>
+                    {{ form.aula }}
+                    <div class="invalid-feedback">Ingresa el número de aula.</div>
+                </div>
+
+                <button type="submit" class="btn btn-primary w-100">➕ Agregar Horario</button>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Estilos mejorados -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/select2@4.0.13/dist/css/select2.min.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+
+<!-- Scripts mejorados -->
+<script src="https://cdn.jsdelivr.net/npm/jquery@3.6.0/dist/jquery.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/select2@4.0.13/dist/js/select2.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+
+<script>
+    $(document).ready(function() {
+        // Mejorar select con Select2
+        $('select').select2({
+            placeholder: "Seleccione una opción",
+            allowClear: true,
+            width: '100%'
+        });
+
+        // Aplicar Flatpickr solo a los campos de hora
+        $('.timepicker').flatpickr({
+            enableTime: true,
+            noCalendar: true,
+            dateFormat: "H:i",
+            time_24hr: true
+        });
+
+        // Validación con Bootstrap 5
+        (function() {
+            'use strict';
+            var forms = document.querySelectorAll('.needs-validation');
+            Array.prototype.slice.call(forms).forEach(function(form) {
+                form.addEventListener('submit', function(event) {
+                    if (!form.checkValidity()) {
+                        event.preventDefault();
+                        event.stopPropagation();
+                    }
+                    form.classList.add('was-validated');
+                }, false);
+            });
+        })();
+    });
+</script>
+{% endblock %}

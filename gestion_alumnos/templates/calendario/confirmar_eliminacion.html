@@ -1,0 +1,13 @@
+{% extends "mi_app/base.html" %}
+
+{% block content %}
+<div class="container mt-4">
+    <h3>¿Estás seguro de que deseas eliminar este evento?</h3>
+    <p><strong>{{ evento.titulo }}</strong> - {{ evento.fecha_inicio|date:"d/m/Y H:i" }}</p>
+    <form method="post">
+        {% csrf_token %}
+        <button type="submit" class="btn btn-danger">Sí, eliminar</button>
+        <a href="{% url 'calendario' %}" class="btn btn-secondary">Cancelar</a>
+    </form>
+</div>
+{% endblock %}

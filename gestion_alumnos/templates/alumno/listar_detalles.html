@@ -1,0 +1,49 @@
+{% extends 'mi_app/base.html' %}
+
+{% block content %}
+<div class="container mt-4">
+    <h2 class="mb-3">📋 Listado de Detalles de Alumnos</h2>
+
+    <table class="table table-bordered table-striped">
+        <thead class="table-dark">
+            <tr>
+                <th>ID</th>
+                <th>Alumno</th>
+                <th>DNI</th>
+                <th>Código Estudiante</th>
+                <th>Promedio</th>
+                <th>Estado Académico</th>
+                <th>Teléfono</th>
+                <th>Contacto Emergencia</th>
+                <th>Acciones</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for detalle in detalles %}
+            <tr>
+                <td>{{ detalle.id }}</td>
+                <td>{{ detalle.alumno.nombre }} {{ detalle.alumno.apellido }}</td>
+                <td>{{ detalle.alumno.dni }}</td>
+                <td>{{ detalle.codigo_estudiante|default:"❌ No asignado" }}</td>
+                <td>{{ detalle.promedio|default:"-" }}</td>
+                <td>{{ detalle.estado_academico }}</td>
+                <td>{{ detalle.telefono|default:"-" }}</td>
+                <td>
+                    {{ detalle.nombre_tutor|default:detalle.nombre_padre|default:detalle.nombre_madre|default:"-" }} 
+                    (📞 {{ detalle.telefono_tutor|default:detalle.telefono_padre|default:detalle.telefono_madre|default:"-" }})
+                </td>
+                <td>
+                    <a href="{% url 'ver_detalle_alumno' detalle.alumno.id %}" class="btn btn-info btn-sm">👀 Ver</a>
+                    <a href="{% url 'editar_detalle_alumno' detalle.alumno.id %}" class="btn btn-warning btn-sm">✏️ Editar</a>
+                    <a href="{% url 'eliminar_detalle_alumno' detalle.alumno.id %}" class="btn btn-danger btn-sm">🗑 Eliminar</a>
+                </td>
+            </tr>
+            {% empty %}
+            <tr>
+                <td colspan="9" class="text-center">⚠ No hay detalles registrados.</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}

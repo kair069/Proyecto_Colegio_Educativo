@@ -1,0 +1,18 @@
+{% extends "mi_app/base.html" %}
+{% block content %}
+<div class="container mt-4">
+    <h2>Detalles del Trabajo</h2>
+    <p><strong>Título:</strong> {{ trabajo.titulo }}</p>
+    <p><strong>Curso:</strong> {{ trabajo.curso_asignado }}</p>
+    <p><strong>Descripción:</strong> {{ trabajo.descripcion }}</p>
+    <p><strong>Fecha de Entrega:</strong> {{ trabajo.fecha_entrega }}</p>
+    <p><strong>Hora de Entrega:</strong> {{ trabajo.hora_entrega }}</p>
+    <p><strong>Periodo Académico:</strong> {{ trabajo.periodo }}</p>
+    <p><strong>Tipo de Trabajo:</strong> {{ trabajo.tipo_trabajo }}</p>
+    <p><strong>Obligatorio:</strong> {% if trabajo.es_obligatorio %}Sí{% else %}No{% endif %}</p>
+
+    <a href="{% url 'trabajos:editar' trabajo.pk %}" class="btn btn-warning">Editar</a>
+    <a href="{% url 'trabajos:eliminar' trabajo.pk %}" class="btn btn-danger">Eliminar</a>
+    <a href="{% url 'trabajos:listar' %}" class="btn btn-secondary">Volver</a>
+</div>
+{% endblock %}

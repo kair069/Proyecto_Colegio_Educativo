@@ -1,0 +1,35 @@
+{% extends "mi_app/base.html" %}
+
+{% block content %}
+<div class="container mt-5">
+    <h2>Registro de Usuario</h2>
+    
+    <form method="post">
+        {% csrf_token %}
+        
+        <!-- Mostrar errores -->
+        {% if form.errors %}
+            <div class="alert alert-danger">
+                <strong>Por favor corrige los siguientes errores:</strong>
+                <ul>
+                    {% for field, errors in form.errors.items %}
+                        <li>{{ field|title }}: {{ errors|striptags }}</li>
+                    {% endfor %}
+                </ul>
+            </div>
+        {% endif %}
+
+        <!-- Renderizar los campos del formulario -->
+        {% for field in form %}
+            <div class="mb-3">
+                <label class="form-label">{{ field.label }}</label>
+                {{ field }}
+            </div>
+        {% endfor %}
+
+        <button type="submit" class="btn btn-primary">Registrarse</button>
+    </form>
+    
+    <p class="mt-3">¿Ya tienes una cuenta? <a href="{% url 'login' %}">Inicia sesión aquí</a></p>
+</div>
+{% endblock %}

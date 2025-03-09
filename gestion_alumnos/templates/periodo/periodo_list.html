@@ -1,0 +1,30 @@
+{% extends 'mi_app/base.html' %}
+{% block content %}
+<div class="container">
+    <h2 class="mt-4">Lista de Periodos</h2>
+    <a href="{% url 'periodo_create' %}" class="btn btn-primary mb-3">Agregar Nuevo Periodo</a>
+    <table class="table table-striped">
+        <thead>
+            <tr>
+                <th>Nombre</th>
+                <th>Fecha Inicio</th>
+                <th>Fecha Fin</th>
+                <th>Acciones</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for periodo in periodos %}
+            <tr>
+                <td>{{ periodo.nombre }}</td>
+                <td>{{ periodo.fecha_inicio }}</td>
+                <td>{{ periodo.fecha_fin }}</td>
+                <td>
+                    <a href="{% url 'periodo_update' periodo.id %}" class="btn btn-warning btn-sm">Editar</a>
+                    <a href="{% url 'periodo_delete' periodo.id %}" class="btn btn-danger btn-sm">Eliminar</a>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}

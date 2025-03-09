@@ -1,0 +1,38 @@
+{% extends "mi_app/base.html" %}
+{% block content %}
+<div class="container mt-4">
+    <h2>Lista de Trabajos</h2>
+    <a href="{% url 'trabajos:crear' %}" class="btn btn-primary mb-3">Crear Trabajo</a>
+    
+    {% if messages %}
+        {% for message in messages %}
+            <div class="alert alert-success">{{ message }}</div>
+        {% endfor %}
+    {% endif %}
+
+    <table class="table table-striped">
+        <thead>
+            <tr>
+                <th>Título</th>
+                <th>Curso</th>
+                <th>Fecha de Entrega</th>
+                <th>Acciones</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for trabajo in trabajos %}
+            <tr>
+                <td>{{ trabajo.titulo }}</td>
+                <td>{{ trabajo.curso_asignado }}</td>
+                <td>{{ trabajo.fecha_entrega }}</td>
+                <td>
+                    <a href="{% url 'trabajos:detalle' trabajo.pk %}" class="btn btn-info btn-sm">Ver</a>
+                    <a href="{% url 'trabajos:editar' trabajo.pk %}" class="btn btn-warning btn-sm">Editar</a>
+                    <a href="{% url 'trabajos:eliminar' trabajo.pk %}" class="btn btn-danger btn-sm">Eliminar</a>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}

@@ -1,0 +1,20 @@
+{% for horario in horarios %}
+<tr>
+    <td>{{ horario.docente }}</td>
+    <td>{{ horario.curso_asignado }}</td>
+    <td>{{ horario.dia }}</td>
+    <td>{{ horario.hora_inicio }}</td>
+    <td>{{ horario.hora_fin }}</td>
+    <td>
+        <a href="{% url 'editar_horario' horario.id %}" class="btn btn-warning btn-sm">Editar</a>
+        <form action="{% url 'eliminar_horario' horario.id %}" method="POST" style="display:inline;">
+            {% csrf_token %}
+            <button type="submit" class="btn btn-danger btn-sm">Eliminar</button>
+        </form>
+    </td>
+</tr>
+{% empty %}
+<tr>
+    <td colspan="6" class="text-center">No hay horarios disponibles.</td>
+</tr>
+{% endfor %}

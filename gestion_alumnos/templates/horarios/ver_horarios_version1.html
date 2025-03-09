@@ -1,0 +1,82 @@
+{% extends "mi_app/base.html" %}
+
+{% block content %}
+<div class="container mt-4">
+    <h1 class="mb-4 text-center">📅 Horarios de Docentes</h1>
+
+    <!-- Paginación superior -->
+    {% include "horarios/paginacion.html" %}
+
+    <!-- Navegación por docentes -->
+    <ul class="nav nav-tabs mb-3" id="docentesTabs" role="tablist">
+        {% for docente in horarios_docentes.keys %}
+            <li class="nav-item" role="presentation">
+                <button class="nav-link {% if forloop.first %}active{% endif %}" 
+                        id="tab-{{ docente.id }}" 
+                        data-bs-toggle="tab" 
+                        data-bs-target="#content-{{ docente.id }}" 
+                        type="button" 
+                        role="tab">
+                    {{ docente.nombre }} {{ docente.apellido }}
+                </button>
+            </li>
+        {% empty %}
+            <p class="text-center">No hay horarios disponibles.</p>
+        {% endfor %}
+    </ul>
+
+    <!-- Contenido de los horarios -->
+    <div class="tab-content">
+        {% for docente, horario_docente_dict in horarios_docentes.items %}
+            <div class="tab-pane fade {% if forloop.first %}show active{% endif %}" 
+                 id="content-{{ docente.id }}" 
+                 role="tabpanel">
+                 
+                <div class="table-responsive overflow-auto">
+                    <table class="table table-bordered table-hover text-center table-sm">
+                        <thead class="table-dark">
+                            <tr>
+                                <th>Día</th>
+                                {% for hora in horas_disponibles %}
+                                    <th>{{ hora }}</th>
+                                {% endfor %}
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for dia, horas in horario_docente_dict.items %}
+                                <tr>
+                                    <td class="fw-bold bg-light">{{ dia }}</td>
+                                    {% for hora, asignacion in horas.items %}
+                                        <td class="{% if asignacion %}bg-info-subtle{% else %}text-secondary{% endif %}">
+                                            {% if asignacion %}
+                                                <span class="badge bg-success">{{ asignacion }}</span>
+                                            {% else %}
+                                                <span class="text-muted">-</span>
+                                            {% endif %}
+                                        </td>
+                                    {% endfor %}
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        {% endfor %}
+    </div>
+
+    <!-- Paginación inferior -->
+    {% include "horarios/paginacion.html" %}
+</div>
+
+<!-- Bootstrap Script para Tabs -->
+<script>
+    var tabTriggerList = [].slice.call(document.querySelectorAll('#docentesTabs button'))
+    tabTriggerList.forEach(function (tab) {
+        tab.addEventListener('click', function (event) {
+            event.preventDefault();
+            var tabTrigger = new bootstrap.Tab(tab);
+            tabTrigger.show();
+        });
+    });
+</script>
+{% endblock %}

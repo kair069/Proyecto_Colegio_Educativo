@@ -1,0 +1,52 @@
+{% extends 'mi_app/base.html' %}
+
+{% block content %}
+<div class="container">
+    <h2 class="mb-4">{% if form.instance.pk %}Editar Grado{% else %}Nuevo Grado{% endif %}</h2>
+
+    {% if form.errors %}
+        <div class="alert alert-danger">
+            <strong>Hubo un error en el formulario:</strong>
+            <ul>
+                {% for field in form %}
+                    {% for error in field.errors %}
+                        <li>{{ error }}</li>
+                    {% endfor %}
+                {% endfor %}
+            </ul>
+        </div>
+    {% endif %}
+
+    <form method="post">
+        {% csrf_token %}
+        
+        <!-- Campo nivel -->
+        <div class="mb-3">
+            {{ form.nivel.label_tag }}
+            {{ form.nivel }}
+        </div>
+
+        <!-- Campo nombre -->
+        <div class="mb-3">
+            {{ form.nombre.label_tag }}
+            {{ form.nombre }}
+        </div>
+
+        <!-- Campo descripcion -->
+        <div class="mb-3">
+            {{ form.descripcion.label_tag }}
+            {{ form.descripcion }}
+        </div>
+
+        <!-- Campo imagen -->
+        <div class="mb-3">
+            {{ form.imagen.label_tag }}
+            {{ form.imagen }}
+        </div>
+
+        <!-- Botones -->
+        <button type="submit" class="btn btn-success">Guardar</button>
+        <a href="{% url 'grado_list' %}" class="btn btn-secondary">Cancelar</a>
+    </form>
+</div>
+{% endblock %}

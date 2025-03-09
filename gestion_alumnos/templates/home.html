@@ -1,0 +1,162 @@
+{% extends "mi_app/base.html" %}
+
+{% block content %}
+<div class="container mt-4">
+    <h2 class="text-center mb-4">🏫 Sistema Escolar</h2>
+    <div class="row row-cols-1 row-cols-md-3 g-4">
+        
+        <!-- Niveles -->
+        <div class="col">
+            <div class="card shadow-sm">
+                <div class="card-body text-center">
+                    <h5 class="card-title">📚 Niveles</h5>
+                    <p class="card-text">Gestión de los niveles educativos.</p>
+                    <a href="{% url 'nivel_list' %}" class="btn btn-primary">Ver más</a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Grados -->
+        <div class="col">
+            <div class="card shadow-sm">
+                <div class="card-body text-center">
+                    <h5 class="card-title">🎓 Grados</h5>
+                    <p class="card-text">Administración de los grados escolares.</p>
+                    <a href="{% url 'grado_list' %}" class="btn btn-primary">Ver más</a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Secciones -->
+        <div class="col">
+            <div class="card shadow-sm">
+                <div class="card-body text-center">
+                    <h5 class="card-title">🏫 Secciones</h5>
+                    <p class="card-text">Gestión de las secciones.</p>
+                    <a href="{% url 'seccion_list' %}" class="btn btn-primary">Ver más</a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Periodos -->
+        <div class="col">
+            <div class="card shadow-sm">
+                <div class="card-body text-center">
+                    <h5 class="card-title">📆 Periodos</h5>
+                    <p class="card-text">Administración de los periodos académicos.</p>
+                    <a href="{% url 'periodo_list' %}" class="btn btn-primary">Ver más</a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Alumnos -->
+        <div class="col">
+            <div class="card shadow-sm">
+                <div class="card-body text-center">
+                    <h5 class="card-title">👨‍🎓 Alumnos</h5>
+                    <p class="card-text">Listado y gestión de alumnos.</p>
+                    <a href="{% url 'alumno_list' %}" class="btn btn-primary">Ver más</a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Cursos -->
+        <div class="col">
+            <div class="card shadow-sm">
+                <div class="card-body text-center">
+                    <h5 class="card-title">📖 Cursos</h5>
+                    <p class="card-text">Administración de los cursos académicos.</p>
+                    <a href="{% url 'curso_list' %}" class="btn btn-primary">Ver más</a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Unidades -->
+        <div class="col">
+            <div class="card shadow-sm">
+                <div class="card-body text-center">
+                    <h5 class="card-title">📘 Unidades</h5>
+                    <p class="card-text">Gestión de unidades temáticas.</p>
+                    <a href="{% url 'unidad_list' %}" class="btn btn-primary">Ver más</a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Temas -->
+        <div class="col">
+            <div class="card shadow-sm">
+                <div class="card-body text-center">
+                    <h5 class="card-title">📖 Temas</h5>
+                    <p class="card-text">Administración de temas de estudio.</p>
+                    <a href="{% url 'tema_list' %}" class="btn btn-primary">Ver más</a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Trabajos -->
+        <div class="col">
+            <div class="card shadow-sm">
+                <div class="card-body text-center">
+                    <h5 class="card-title">📂 Trabajos</h5>
+                    <p class="card-text">Registro y revisión de trabajos.</p>
+                    <a href="{% url 'trabajo_list' %}" class="btn btn-primary">Ver más</a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Horarios Docentes -->
+        <div class="col">
+            <div class="card shadow-sm">
+                <div class="card-body text-center">
+                    <h5 class="card-title">🕒 Horarios Docentes</h5>
+                    <p class="card-text">Gestión de los horarios de los docentes.</p>
+                    <a href="{% url 'listar_horarios' %}" class="btn btn-primary">Ver más</a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Asistencia -->
+        <div class="col">
+            <div class="card shadow-sm">
+                <div class="card-body text-center">
+                    <h5 class="card-title">✅ Asistencia</h5>
+                    <p class="card-text">Registro y control de asistencia.</p>
+                    <a href="{% url 'seleccionar_curso_asistencia' %}" class="btn btn-primary">Ver más</a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Calificaciones -->
+        <div class="col">
+            <div class="card shadow-sm">
+                <div class="card-body text-center">
+                    <h5 class="card-title">📊 Calificaciones</h5>
+                    <p class="card-text">Registro y gestión de calificaciones.</p>
+                    <a href="{% url 'calificacion_list' %}" class="btn btn-primary">Ver más</a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Reproductor MP3 -->
+        <div class="col">
+            <div class="card shadow-sm">
+                <div class="card-body text-center">
+                    <h5 class="card-title">🎵 Reproductor</h5>
+                    <p class="card-text">Reproduce archivos de audio para el aula.</p>
+                    <a href="{% url 'reproductor_mp3' %}" class="btn btn-primary">Ver más</a>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- Logout -->
+    <div class="text-center mt-4">
+        <form method="post" action="{% url 'logout' %}">
+            {% csrf_token %}
+            <button type="submit" class="btn btn-danger">Cerrar Sesión</button>
+        </form>
+    </div>
+
+</div>
+{% endblock %}

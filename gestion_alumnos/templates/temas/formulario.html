@@ -1,0 +1,26 @@
+{% extends "mi_app/base.html" %}
+{% load crispy_forms_tags %}
+
+{% block content %}
+<div class="container mt-4">
+    <h2 class="text-center">{% if form.instance.pk %}✏️ Editar Tema{% else %}➕ Agregar Tema{% endif %}</h2>
+    
+    <div class="card shadow-lg p-4 border-0 rounded-4">
+        <div class="card-body">
+            {{ form.media }}  <!-- ✅ Cargar archivos de CKEditor -->
+
+            <form method="post">
+                {% csrf_token %}
+                {{ form|crispy }}
+
+                <div class="d-flex justify-content-center gap-3 mt-4">
+                    <a href="{% url 'tema_list' %}" class="btn btn-secondary shadow-sm px-4">🔙 Cancelar</a>
+                    <button type="submit" class="btn btn-success shadow-sm px-4">
+                        {% if form.instance.pk %}💾 Guardar Cambios{% else %}✅ Crear Tema{% endif %}
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

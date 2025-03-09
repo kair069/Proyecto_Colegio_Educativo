@@ -1,0 +1,98 @@
+{% extends "mi_app/base.html" %}
+{% load static %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="text-center">
+        <h2 class="mb-3">Seleccionar Trabajo a Calificar</h2>
+    </div>
+
+    {% if advertencia %}
+        <div class="alert alert-danger text-center">
+            <i class="fas fa-exclamation-triangle"></i> {{ advertencia }}
+        </div>
+    {% endif %}
+
+    <!-- Filtros con mejor diseño -->
+    <div class="card shadow-sm p-3 mb-4 bg-light">
+        <div class="row g-2">
+            <!-- Filtro de Docente -->
+            <div class="col-md-4">
+                <label for="docenteDropdown" class="form-label fw-bold">Docente</label>
+                <select class="form-select filter-option" id="docenteDropdown" data-filter="docente">
+                    <option value="">Todos</option>
+                    {% for docente in docentes %}
+                        <option value="{{ docente.id }}">{{ docente.nombre }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <!-- Filtro de Curso -->
+            <div class="col-md-4">
+                <label for="cursoDropdown" class="form-label fw-bold">Curso</label>
+                <select class="form-select filter-option" id="cursoDropdown" data-filter="curso">
+                    <option value="">Todos</option>
+                    {% for curso in cursos %}
+                        <option value="{{ curso.id }}">{{ curso.nombre }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <!-- Filtro de Sección -->
+            <div class="col-md-4">
+                <label for="seccionDropdown" class="form-label fw-bold">Sección</label>
+                <select class="form-select filter-option" id="seccionDropdown" data-filter="seccion">
+                    <option value="">Todas</option>
+                    {% for seccion in secciones %}
+                        <option value="{{ seccion.id }}">{{ seccion }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+        </div>
+    </div>
+
+    <!-- Lista de trabajos -->
+    <div id="trabajos-container">
+        {% include "calificacion/partials/lista_trabajos.html" %}
+    </div>
+</div>
+
+<script>
+    document.addEventListener("DOMContentLoaded", function() {
+        function actualizarLista() {
+            let params = new URLSearchParams({
+                docente: localStorage.getItem("filtro_docente") || "",
+                curso: localStorage.getItem("filtro_curso") || "",
+                seccion: localStorage.getItem("filtro_seccion") || ""
+            });
+
+            fetch(window.location.pathname + "?" + params.toString(), {
+                headers: { 'X-Requested-With': 'XMLHttpRequest' }
+            })
+            .then(response => response.text())
+            .then(data => {
+                document.querySelector("#trabajos-container").innerHTML = new DOMParser()
+                    .parseFromString(data, "text/html")
+                    .querySelector("#trabajos-container").innerHTML;
+            })
+            .catch(error => console.error("Error al actualizar la lista:", error));
+        }
+
+        // Cargar filtros guardados
+        document.querySelectorAll(".filter-option").forEach(select => {
+            let filtro = select.dataset.filter;
+            let valorGuardado = localStorage.getItem(`filtro_${filtro}`);
+            if (valorGuardado) {
+                select.value = valorGuardado;
+            }
+            select.addEventListener("change", function() {
+                localStorage.setItem(`filtro_${filtro}`, this.value);
+                actualizarLista();
+            });
+        });
+
+        actualizarLista();
+    });
+</script>
+
+{% endblock %}

@@ -1,0 +1,14 @@
+{% extends 'mi_app/base.html' %}
+{% block content %}
+<div class="container mt-4">
+    <h2>{% if object %}Editar{% else %}Agregar{% endif %} Asistencia</h2>
+    <form method="post">
+        {% csrf_token %}
+        <div class="mb-3">
+            {{ form.as_p }}
+        </div>
+        <button type="submit" class="btn btn-primary">Guardar</button>
+        <a href="{% url 'asistencia_list' %}" class="btn btn-secondary">Cancelar</a>
+    </form>
+</div>
+{% endblock %}

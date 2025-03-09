@@ -1,0 +1,104 @@
+{% extends 'mi_app/base.html' %}
+
+{% block content %}
+<div class="container mt-4">
+    <h2 class="mb-4 text-center">👨‍🎓 Detalles del Alumno</h2>
+
+    <!-- Foto del Alumno -->
+    {% if detalle.foto_alumno %}
+    <div class="text-center mb-4">
+        <img src="{{ detalle.foto_alumno.url }}" alt="Foto del Alumno" class="img-thumbnail rounded-circle shadow-lg" style="width: 150px; height: 150px; object-fit: cover;">
+    </div>
+    {% endif %}
+
+    <!-- Información General -->
+    <div class="card shadow-lg">
+        <div class="card-header bg-primary text-white">
+            📄 Información General
+        </div>
+        <div class="card-body">
+            <p><strong>👤 Nombre:</strong> {{ alumno.nombre }} {{ alumno.apellido }}</p>
+            <p><strong>🆔 DNI:</strong> {{ alumno.dni }}</p>
+            <p><strong>🏫 Sección:</strong> {{ alumno.seccion.nombre }}</p>
+        </div>
+    </div>
+
+    {% if detalle %}
+    <!-- Información Adicional -->
+    <div class="card mt-4 shadow-lg">
+        <div class="card-header bg-success text-white">
+            📌 Información Adicional
+        </div>
+        <div class="card-body">
+            <div class="row">
+                <div class="col-md-6">
+                    <p><strong>🎂 Fecha de Nacimiento:</strong> {{ detalle.fecha_nacimiento|date:"d/m/Y" }}</p>
+                    <p><strong>🏠 Dirección:</strong> {{ detalle.direccion }}</p>
+                    <p><strong>📞 Teléfono:</strong> {{ detalle.telefono }}</p>
+                    <p><strong>🩸 Tipo de Sangre:</strong> {{ detalle.tipo_sangre }}</p>
+                    <p><strong>⚠️ Alergias:</strong> {{ detalle.alergias|default:"No registradas" }}</p>
+                    <p><strong>🏥 Seguro Médico:</strong> {{ detalle.seguro_medico|default:"No especificado" }}</p>
+                </div>
+                <div class="col-md-6">
+                    <p><strong>📚 Estado Académico:</strong> {{ detalle.estado_academico }}</p>
+                    <p><strong>📊 Promedio:</strong> {{ detalle.promedio }}</p>
+                    <p><strong>🌎 Nacionalidad:</strong> {{ detalle.nacionalidad }}</p>
+                    <p><strong>🗣 Idiomas:</strong> {{ detalle.idiomas }}</p>
+                    <p><strong>🚪 Salida Autorizada:</strong> {% if detalle.salida_autorizada %} ✅ Sí {% else %} ❌ No {% endif %}</p>
+                    <p><strong>⚖️ Restricciones Legales:</strong> {{ detalle.restricciones_legales|default:"No registradas" }}</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Documentos -->
+    <div class="card mt-4 shadow-lg">
+        <div class="card-header bg-info text-white">
+            📂 Documentos
+        </div>
+        <div class="card-body">
+            <div class="row text-center">
+                {% if detalle.foto_dni %}
+                <div class="col-md-4 mb-3">
+                    <strong>📸 Foto DNI</strong><br>
+                    <img src="{{ detalle.foto_dni.url }}" alt="Foto DNI" class="img-thumbnail shadow">
+                </div>
+                {% endif %}
+                
+                {% if detalle.partida_nacimiento %}
+                <div class="col-md-4 mb-3">
+                    <strong>📜 Partida de Nacimiento</strong><br>
+                    <img src="{{ detalle.partida_nacimiento.url }}" alt="Partida de Nacimiento" class="img-thumbnail shadow">
+                </div>
+                {% endif %}
+
+                {% if detalle.ficha_matricula %}
+                <div class="col-md-4 mb-3">
+                    <strong>📄 Ficha de Matrícula</strong><br>
+                    <img src="{{ detalle.ficha_matricula.url }}" alt="Ficha de Matrícula" class="img-thumbnail shadow">
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <!-- Botones de acción -->
+    <div class="mt-4 d-flex justify-content-center gap-3">
+        <a href="{% url 'editar_detalle_alumno' alumno.id %}" class="btn btn-warning">✏️ Editar Detalles</a>
+        <a href="{% url 'eliminar_detalle_alumno' alumno.id %}" class="btn btn-danger"
+           onclick="return confirm('¿Seguro que deseas eliminar los detalles de este alumno?')">🗑 Eliminar Detalles</a>
+    </div>
+    {% else %}
+    <div class="alert alert-warning mt-4 text-center">
+        ⚠️ Este alumno no tiene detalles registrados.
+    </div>
+    <div class="text-center">
+        <a href="{% url 'crear_detalle_alumno' alumno.id %}" class="btn btn-primary">➕ Agregar Detalles</a>
+    </div>
+    {% endif %}
+    
+    <div class="text-center mt-4">
+        <a href="{% url 'alumno_list' %}" class="btn btn-secondary">⬅ Volver al Listado</a>
+    </div>
+</div>
+{% endblock %}

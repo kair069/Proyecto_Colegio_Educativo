@@ -1,0 +1,156 @@
+{% extends "mi_app/base.html" %}
+
+{% block content %}
+<div class="container mt-4">
+    <h1 class="mb-4 text-center">📅 Horarios de Docentes</h1>
+
+    <!-- Barra de búsqueda -->
+    <div class="input-group mb-3">
+        <span class="input-group-text">🔍</span>
+        <input type="text" id="filtro" class="form-control" placeholder="Buscar docente...">
+    </div>
+
+    <!-- Botón de exportación a PDF -->
+    <div class="text-end mb-3">
+        <button class="btn btn-danger" id="exportPdfBtn">📄 Exportar a PDF</button>
+    </div>
+
+    <!-- Contenido de horarios -->
+    <div id="contenedor-pdf">
+        <ul class="nav nav-tabs mb-3" id="docentesTabs" role="tablist">
+            {% for docente in horarios_docentes.keys %}
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link {% if forloop.first %}active{% endif %}" 
+                            id="tab-{{ docente.id }}" 
+                            data-bs-toggle="tab" 
+                            data-bs-target="#content-{{ docente.id }}" 
+                            type="button" 
+                            role="tab">
+                        👨‍🏫 {{ docente.nombre }} {{ docente.apellido }}
+                    </button>
+                </li>
+            {% empty %}
+                <p class="text-center">No hay horarios disponibles.</p>
+            {% endfor %}
+        </ul>
+
+        <div class="tab-content">
+            {% for docente, horario_docente_dict in horarios_docentes.items %}
+                <div class="tab-pane fade {% if forloop.first %}show active{% endif %}" 
+                     id="content-{{ docente.id }}" 
+                     role="tabpanel">
+                     
+                    <div class="table-responsive">
+                        <table class="table table-bordered table-hover text-center table-sm horario-table">
+                            <thead class="table-dark">
+                                <tr>
+                                    <th>📆 Día</th>
+                                    {% for hora in horas_disponibles %}
+                                        <th>🕒 {{ hora }}</th>
+                                    {% endfor %}
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for dia, horas in horario_docente_dict.items %}
+                                    <tr>
+                                        <td class="fw-bold bg-light">📅 {{ dia }}</td>
+                                        {% for hora, asignacion in horas.items %}
+                                            <td class="horario-cell {% if asignacion %}ocupado{% else %}disponible{% endif %}">
+                                                {% if asignacion %}
+                                                    📖 {{ asignacion|linebreaksbr }}
+                                                {% else %}
+                                                    ✅ Disponible
+                                                {% endif %}
+                                            </td>
+                                        {% endfor %}
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+
+<!-- Estilos -->
+<style>
+    .horario-cell {
+        white-space: normal;
+        font-size: 0.85rem;
+        padding: 8px;
+        max-width: 180px;
+        text-align: center;
+        transition: background 0.3s ease;
+    }
+
+    .ocupado {
+        background-color: #dc3545 !important;
+        color: white;
+        font-weight: bold;
+    }
+
+    .disponible {
+        background-color: #28a745 !important;
+        color: white;
+        font-weight: bold;
+    }
+</style>
+
+<!-- Carga de librerías necesarias -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
+
+<!-- Script de funcionalidades -->
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        // Activar tooltips de Bootstrap
+        let tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+        let tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+            return new bootstrap.Tooltip(tooltipTriggerEl);
+        });
+
+        // Filtrar docentes en pestañas
+        document.getElementById('filtro').addEventListener('input', function () {
+            let filter = this.value.toLowerCase().trim();
+            let tabs = document.querySelectorAll('#docentesTabs button');
+
+            tabs.forEach(tab => {
+                let docenteNombre = tab.innerText.toLowerCase();
+                tab.parentElement.style.display = docenteNombre.includes(filter) ? 'flex' : 'none';
+            });
+        });
+
+        // Exportar a PDF
+        document.getElementById('exportPdfBtn').addEventListener('click', function () {
+            const { jsPDF } = window.jspdf;
+            const doc = new jsPDF({
+                orientation: "landscape",
+                unit: "mm",
+                format: "a3" // PDF más grande
+            });
+
+            let content = document.getElementById("contenedor-pdf");
+
+            html2canvas(content, {
+                scale: 3, // Mejor calidad
+                useCORS: true // Para imágenes externas
+            }).then(canvas => {
+                let imgData = canvas.toDataURL("image/png");
+                let imgWidth = 410; // Tamaño A3 horizontal
+                let imgHeight = (canvas.height * imgWidth) / canvas.width; // Mantener proporción
+
+                doc.addImage(imgData, "PNG", 10, 10, imgWidth, imgHeight);
+                doc.save("horarios_docentes.pdf");
+            }).catch(error => {
+                console.error("Error al generar el PDF:", error);
+            });
+        });
+    });
+</script>
+
+
+{% endblock %}

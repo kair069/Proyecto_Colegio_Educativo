@@ -1,0 +1,38 @@
+{% extends 'mi_app/base.html' %}
+{% block content %}
+<div class="container mt-4">
+    <h2>Lista de Asistencias</h2>
+    <a href="{% url 'asistencia_create' %}" class="btn btn-success mb-3">Agregar Asistencia</a>
+    <table class="table table-striped">
+        <thead>
+            <tr>
+                <th>Alumno</th>
+                <th>Curso</th>
+                <th>Fecha</th>
+                <th>Periodo</th>
+                <th>Estado</th>
+                <th>Acciones</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for asistencia in object_list %}
+            <tr>
+                <td>{{ asistencia.alumno }}</td>
+                <td>{{ asistencia.curso_asignado }}</td>
+                <td>{{ asistencia.fecha }}</td>
+                <td>{{ asistencia.periodo }}</td>
+                <td>{{ asistencia.estado }}</td>
+                <td>
+                    <a href="{% url 'asistencia_update' asistencia.pk %}" class="btn btn-warning btn-sm">Editar</a>
+                    <a href="{% url 'asistencia_delete' asistencia.pk %}" class="btn btn-danger btn-sm">Eliminar</a>
+                </td>
+            </tr>
+            {% empty %}
+            <tr>
+                <td colspan="6" class="text-center">No hay asistencias registradas.</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}
