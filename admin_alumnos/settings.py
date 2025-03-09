@@ -25,13 +25,19 @@ SECRET_KEY = 'django-insecure-!n_e-@z&vnn_a-!k9&o%t#g89sp2a(2r38elsb6v$fazk^nnn+
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
-
+ALLOWED_HOSTS = [
+    'proyecto-colegio-educativo.onrender.com',
+    'localhost',
+    '127.0.0.1'
+]
+CSRF_TRUSTED_ORIGINS = [
+    'https://proyecto-colegio-educativo.onrender.com'
+]
 TIME_ZONE = 'America/Lima'  # Cambia esto según tu país
 USE_TZ = True
-
+CORS_ALLOW_ALL_ORIGINS = True  # O restringirlo a dominios específicos
 # Application definition
-
+ALLOWED_HOSTS = ['*']  # Por ahora, para pruebas
 INSTALLED_APPS = [
     'django.contrib.admin',
     'django.contrib.auth',
@@ -44,6 +50,7 @@ INSTALLED_APPS = [
     "django_summernote",
     'crispy_forms',
     'crispy_bootstrap5',  # Si usas Bootstrap 5
+    'corsheaders',
     
 ]
 CRISPY_ALLOWED_TEMPLATE_PACKS = "bootstrap5"
@@ -159,6 +166,12 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 
 import os
+import os
+
+PORT = os.getenv('PORT', '8000')
+ALLOWED_HOSTS = ['*']  # Por ahora, para pruebas
+WSGI_APPLICATION = 'admin_alumnos.wsgi.application'  # Asegúrate que sea el nombre correcto
+
 
 MEDIA_URL = '/media/'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
