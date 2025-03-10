@@ -28,19 +28,26 @@ class Nivel(models.Model):
 #         return f"{self.nombre} - {self.nivel}"
 from django.db import models
 
-class Grado(models.Model):
-    nivel = models.ForeignKey(Nivel, on_delete=models.CASCADE, related_name="grados")
-    nombre = models.CharField(max_length=50, help_text="Ejemplo: 1° de Secundaria")
-    descripcion = models.TextField(blank=True, null=True, help_text="Descripción opcional del grado", default="Descripción no disponible")
-    imagen = models.URLField(blank=True, null=True, help_text="Enlace a una imagen representativa del grado")  # Cambié de ImageField a URLField
+from django.db import models
 
-    def clean(self):
-        from django.core.exceptions import ValidationError
-        if "°" not in self.nombre:
-            raise ValidationError("El nombre del grado debe incluir el símbolo '°' para grados como '1° de Secundaria'.")
+class Grado(models.Model):
+    GRADOS_CHOICES = [
+        ('1°', '1°'),
+        ('2°', '2°'),
+        ('3°', '3°'),
+        ('4°', '4°'),
+        ('5°', '5°'),
+        ('6°', '6°'),
+    ]
+
+    nivel = models.ForeignKey(Nivel, on_delete=models.CASCADE, related_name="grados")
+    nombre = models.CharField(max_length=2, choices=GRADOS_CHOICES, help_text="Selecciona el grado")
+    descripcion = models.TextField(blank=True, null=True, default="Descripción no disponible", help_text="Descripción opcional del grado")
+    imagen = models.URLField(blank=True, null=True, help_text="Enlace a una imagen representativa del grado")
 
     def __str__(self):
         return f"{self.nombre} ({self.nivel.nombre})"
+
 
 
 class Seccion(models.Model):
@@ -74,13 +81,16 @@ class Curso(models.Model):
 
 
 class Docente(models.Model):
+    #cambio
+    usuario = models.OneToOneField(User, on_delete=models.CASCADE)  # Ahora cada docente tiene un usuario
     nombre = models.CharField(max_length=100)
     apellido = models.CharField(max_length=100)
 
     def __str__(self):
-        return f"{self.nombre} {self.apellido}"
+        return f"{self.nombre} {self.apellido} ({self.usuario.username})"
 
 class Alumno(models.Model):
+    #usuario = models.OneToOneField(User, on_delete=models.CASCADE)  # Cada alumno tiene un usuario
     nombre = models.CharField(max_length=100)
     apellido = models.CharField(max_length=100)
     dni = models.CharField(max_length=8, unique=True)
@@ -309,11 +319,28 @@ class EventoCalendario(models.Model):
 from django.db import models
 from ckeditor.fields import RichTextField
 
+# class Unidad(models.Model):
+#     curso = models.ForeignKey("Curso", on_delete=models.CASCADE, related_name="unidades")
+#     nombre = models.CharField(max_length=100)
+#     descripcion = RichTextField(blank=True, help_text="Descripción breve de la unidad")
+#     numero = models.PositiveIntegerField(help_text="Número de la unidad dentro del curso")
+
+#     class Meta:
+#         ordering = ['numero']
+
+#     def __str__(self):
+#         return f"Unidad {self.numero}: {self.nombre} ({self.curso.nombre})"
+
+from django.db import models
+from ckeditor.fields import RichTextField  # Para descripciones enriquecidas
+
 class Unidad(models.Model):
     curso = models.ForeignKey("Curso", on_delete=models.CASCADE, related_name="unidades")
     nombre = models.CharField(max_length=100)
     descripcion = RichTextField(blank=True, help_text="Descripción breve de la unidad")
     numero = models.PositiveIntegerField(help_text="Número de la unidad dentro del curso")
+    material_pdf = models.FileField(upload_to='unidades_pdfs/', blank=True, null=True)  # 📂 PDF
+    video_url = models.URLField(blank=True, null=True, help_text="Enlace a video de YouTube")  # 🎥 Video
 
     class Meta:
         ordering = ['numero']

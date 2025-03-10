@@ -5,15 +5,17 @@
     <h2 class="fw-bold text-primary mb-4 text-center">Lista de Grados</h2>
 
     <!-- Botón para agregar nuevo grado -->
-    <a href="{% url 'grado_create' %}" class="btn btn-success btn-lg mb-4">
-        <i class="fas fa-plus-circle"></i> Agregar Nuevo Grado
-    </a>
+    <div class="text-center mb-4">
+        <a href="{% url 'grado_create' %}" class="btn btn-success btn-sm">
+            <i class="fas fa-plus-circle"></i> Agregar Nuevo Grado
+        </a>
+    </div>
 
     {% if grados %}
         <div class="row">
             {% for grado in grados %}
             <div class="col-md-6 col-lg-4 mb-4">
-                <div class="card shadow-lg border-0 rounded-3 transition-transform hover:scale-105">
+                <div class="card shadow-lg border-0 rounded-3">
                     <div class="card-body">
                         <!-- Nombre del grado -->
                         <h5 class="card-title text-center text-primary">{{ grado.nombre }}</h5>
@@ -27,7 +29,7 @@
                         <!-- Imagen del grado (si existe) -->
                         <div class="text-center mb-3">
                             {% if grado.imagen %}
-                                <img src="{{ grado.imagen }}" alt="Imagen del Grado" class="img-fluid rounded-3" style="max-height: 150px; object-fit: cover;">
+                                <img src="{{ grado.imagen }}" alt="Imagen del Grado" class="img-fluid rounded-3" style="max-height: 150px; width: 100%; object-fit: cover;">
                             {% else %}
                                 <i class="fas fa-image fa-3x text-muted"></i>
                                 <p class="text-muted">No hay imagen disponible</p>
@@ -36,10 +38,10 @@
 
                         <!-- Botones para editar y eliminar -->
                         <div class="d-flex justify-content-center mt-3">
-                            <a href="{% url 'grado_update' grado.id %}" class="btn btn-warning btn-sm mx-1" data-toggle="tooltip" title="Editar Grado">
+                            <a href="{% url 'grado_update' grado.id %}" class="btn btn-warning btn-sm mx-1" data-bs-toggle="tooltip" title="Editar Grado">
                                 <i class="fas fa-edit"></i> Editar
                             </a>
-                            <a href="{% url 'grado_delete' grado.id %}" class="btn btn-danger btn-sm mx-1" onclick="return confirm('¿Estás seguro de que deseas eliminar este grado?');" data-toggle="tooltip" title="Eliminar Grado">
+                            <a href="{% url 'grado_delete' grado.id %}" class="btn btn-danger btn-sm mx-1" onclick="return confirm('¿Estás seguro de que deseas eliminar este grado?');" data-bs-toggle="tooltip" title="Eliminar Grado">
                                 <i class="fas fa-trash-alt"></i> Eliminar
                             </a>
                         </div>
@@ -56,13 +58,16 @@
     {% endif %}
 </div>
 
-<!-- Agregar FontAwesome para los íconos -->
-<script src="https://kit.fontawesome.com/a076d05399.js" crossorigin="anonymous"></script>
+<!-- Carga correcta de FontAwesome -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/js/all.min.js" integrity="sha384-rzA+2kP9A6q0F3RqGqDfJfBkFU/sjPvx+9dCqzZ2l4+9Hjog1rVY6SZOyNZd0xlH" crossorigin="anonymous"></script>
 
 <!-- Tooltip para los botones -->
 <script>
-    $(document).ready(function() {
-        $('[data-toggle="tooltip"]').tooltip();
+    document.addEventListener("DOMContentLoaded", function() {
+        var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+        tooltipTriggerList.map(function (tooltipTriggerEl) {
+            return new bootstrap.Tooltip(tooltipTriggerEl);
+        });
     });
 </script>
 

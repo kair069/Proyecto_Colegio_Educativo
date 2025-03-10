@@ -1,15 +1,22 @@
 {% extends 'mi_app/base.html' %}
 
-
 {% block content %}
 <div class="container mt-4">
-    <h2>Eliminar Docente</h2>
-    <p>¿Estás seguro de que deseas eliminar al docente <strong>{{ docente.nombre }} {{ docente.apellido }}</strong>?</p>
-    
-    <form method="post">
+    <h2 class="text-danger">Eliminar Docente</h2>
+
+    <div class="alert alert-warning">
+        <p>⚠️ ¿Estás seguro de que deseas eliminar al docente <strong>{{ docente.nombre }} {{ docente.apellido }}</strong> (<strong>{{ docente.usuario.username }}</strong>)?</p>
+        <p>Esta acción no se puede deshacer.</p>
+    </div>
+
+    <form method="post" class="mt-3">
         {% csrf_token %}
-        <button type="submit" class="btn btn-danger">Eliminar</button>
-        <a href="{% url 'docente_list' %}" class="btn btn-secondary">Cancelar</a>
+        <button type="submit" class="btn btn-danger">
+            <i class="fas fa-trash-alt"></i> Eliminar
+        </button>
+        <a href="{% url 'docente_list' %}" class="btn btn-secondary">
+            <i class="fas fa-times"></i> Cancelar
+        </a>
     </form>
 </div>
 {% endblock %}

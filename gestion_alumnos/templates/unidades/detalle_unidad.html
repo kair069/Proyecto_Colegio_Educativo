@@ -3,16 +3,16 @@
 {% block content %}
 <div class="container mt-4">
     <h2 class="mb-3 text-center">📌 Detalles de la Unidad</h2>
-    
+
     <div class="card shadow-lg p-4 border-0 rounded-4">
         <div class="card-body">
             <h3 class="text-primary text-center fw-bold">{{ unidad.nombre }}</h3>
             <hr class="my-3">
-            
+
             <div class="row">
                 <div class="col-md-6">
                     <p><strong>📚 Curso:</strong> {{ unidad.curso.nombre }}</p>
-                    <td>{{ unidad.curso.grado.nivel.nombre }} - {{ unidad.curso.grado.nombre }} - {{ unidad.curso.nombre }}</td>
+                    <p>{{ unidad.curso.grado.nivel.nombre }} - {{ unidad.curso.grado.nombre }} - {{ unidad.curso.nombre }}</p>
                     <p><strong>🔢 Número de unidad:</strong> {{ unidad.numero }}</p>
                 </div>
                 <div class="col-md-6 text-center">
@@ -24,6 +24,34 @@
             <div class="mt-3 p-3 border rounded bg-light">
                 <h5 class="text-secondary">📝 Descripción:</h5>
                 <p class="text-muted">{{ unidad.descripcion|safe }}</p>
+            </div>
+
+            <!-- PDF con scroll y tamaño A4 -->
+            <div class="mt-4 text-center">
+                {% if unidad.material_pdf %}
+                    <h5 class="text-secondary">📄 Material PDF:</h5>
+                    <div id="pdf-container" class="border shadow-sm rounded"
+                         style="width: 853px; height: 1200px; overflow-y: auto; scrollbar-width: thin;">
+                        <canvas id="pdf-viewer"></canvas>
+                    </div>
+                    <div class="mt-2">
+                        <button class="btn btn-primary btn-sm" onclick="prevPage()">⬅️ Anterior</button>
+                        <span id="page-num" class="mx-2"></span>
+                        <button class="btn btn-primary btn-sm" onclick="nextPage()">Siguiente ➡️</button>
+                    </div>
+                {% else %}
+                    <p class="text-muted">No hay material PDF disponible.</p>
+                {% endif %}
+            </div>
+
+            <!-- Video -->
+            <div class="mt-4 text-center">
+                {% if unidad.video_url %}
+                    <h5 class="text-secondary">🎥 Video Explicativo:</h5>
+                    <div id="player" class="border shadow-sm rounded" style="width: 853px; height: 480px;"></div>
+                {% else %}
+                    <p class="text-muted">No hay video disponible.</p>
+                {% endif %}
             </div>
 
             <div class="d-flex justify-content-center gap-3 mt-4">
@@ -43,4 +71,92 @@
         </div>
     </div>
 </div>
+
+<!-- Librería PDF.js -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.min.js"></script>
+
+<!-- YouTube Player API -->
+<script src="https://www.youtube.com/iframe_api"></script>
+
+<script>
+document.addEventListener("DOMContentLoaded", function() {
+    var pdfUrl = "{{ unidad.material_pdf.url|default:'' }}";
+    var pdfViewer = document.getElementById("pdf-viewer");
+    var pdfContainer = document.getElementById("pdf-container");
+    var currentPage = 1;
+    var pdfDoc = null;
+
+    if (pdfUrl) {
+        pdfjsLib.getDocument(pdfUrl).promise.then(function(pdf) {
+            pdfDoc = pdf;
+            renderPage(currentPage);
+        });
+
+        function renderPage(num) {
+            pdfDoc.getPage(num).then(function(page) {
+                var scale = 1.5;
+                var viewport = page.getViewport({ scale: scale });
+
+                var canvas = document.getElementById("pdf-viewer");
+                var context = canvas.getContext("2d");
+                canvas.width = viewport.width;
+                canvas.height = viewport.height;
+
+                var renderContext = {
+                    canvasContext: context,
+                    viewport: viewport
+                };
+                page.render(renderContext);
+
+                document.getElementById("page-num").textContent = `Página ${num} de ${pdfDoc.numPages}`;
+            });
+        }
+
+        window.nextPage = function() {
+            if (currentPage < pdfDoc.numPages) {
+                currentPage++;
+                renderPage(currentPage);
+                pdfContainer.scrollTo(0, 0);
+            }
+        };
+
+        window.prevPage = function() {
+            if (currentPage > 1) {
+                currentPage--;
+                renderPage(currentPage);
+                pdfContainer.scrollTo(0, 0);
+            }
+        };
+    }
+
+    var videoUrl = "{{ unidad.video_url|default:'' }}";
+    var videoId = "";
+
+    if (videoUrl.includes("youtube.com/watch?v=")) {
+        videoId = videoUrl.split("v=")[1].split("&")[0];
+    } else if (videoUrl.includes("youtu.be/")) {
+        videoId = videoUrl.split("youtu.be/")[1].split("?")[0];
+    }
+
+    window.onYouTubeIframeAPIReady = function() {
+        if (videoId) {
+            new YT.Player('player', {
+                height: '480',
+                width: '853',
+                videoId: videoId,
+                playerVars: {
+                    'autoplay': 0,
+                    'controls': 1,
+                    'showinfo': 0,
+                    'rel': 0
+                }
+            });
+        }
+    };
+
+    if (window.YT && YT.loaded) {   
+        onYouTubeIframeAPIReady();
+    }
+});
+</script>
 {% endblock %}

@@ -1,5 +1,5 @@
 {% extends "mi_app/base.html" %}
-{% load static %}  
+{% load static %}
 
 {% block content %}
 <div class="container mt-4">
@@ -11,14 +11,12 @@
     </h2>
 
     <!-- Filtros de búsqueda -->
-    <form method="GET" class="row g-2 mb-3">
+    <form method="GET" class="row g-2 mb-3" id="filter-form">
         <div class="col-md-4">
-            <label for="search" class="visually-hidden">Buscar Unidad</label>
             <input type="text" id="search" name="q" class="form-control" placeholder="🔍 Buscar unidad..." value="{{ request.GET.q }}">
         </div>
 
         <div class="col-md-2">
-            <label for="nivel" class="visually-hidden">Filtrar por Nivel</label>
             <select name="nivel" id="nivel" class="form-select">
                 <option value="">🏫 Filtrar por nivel</option>
                 {% for nivel in niveles %}
@@ -30,7 +28,6 @@
         </div>
 
         <div class="col-md-2">
-            <label for="grado" class="visually-hidden">Filtrar por Grado</label>
             <select name="grado" id="grado" class="form-select">
                 <option value="">🎓 Filtrar por grado</option>
                 {% for grado in grados %}
@@ -42,7 +39,6 @@
         </div>
 
         <div class="col-md-2">
-            <label for="curso" class="visually-hidden">Filtrar por Curso</label>
             <select name="curso" id="curso" class="form-select">
                 <option value="">📚 Filtrar por curso</option>
                 {% for curso in cursos %}
@@ -53,8 +49,9 @@
             </select>
         </div>
 
-        <div class="col-md-2">
+        <div class="col-md-2 d-flex">
             <button type="submit" class="btn btn-primary w-100">🔎 Buscar</button>
+            <a href="{% url 'unidad_list' %}" class="btn btn-outline-secondary ms-2 w-100">🔄 Limpiar</a>
         </div>
     </form>
 
@@ -64,15 +61,16 @@
             <thead class="table-dark text-center">
                 <tr>
                     <th>#</th>
-                    <th>📖 Curso</th>
+                    <th>📚 Curso</th>
                     <th>📌 Unidad</th>
                     <th>📝 Descripción</th>
+                    <th>🌐 Recursos</th>
                     <th>⚙️ Acciones</th>
                 </tr>
             </thead>
             <tbody>
                 {% for unidad in unidades %}
-                <tr>
+                <tr class="fade-in">
                     <td class="fw-bold text-center">{{ unidad.numero }}</td>
                     <td>{{ unidad.curso.grado.nivel.nombre }} - {{ unidad.curso.grado.nombre }} - {{ unidad.curso.nombre }}</td>
                     <td>{{ unidad.nombre }}</td>
@@ -82,16 +80,24 @@
                         </div>
                     </td>
                     <td class="text-center">
+                        {% if unidad.material_pdf %}
+                            <a href="{{ unidad.material_pdf.url }}" class="btn btn-secondary btn-sm" target="_blank" title="Ver PDF">📄</a>
+                        {% endif %}
+                        {% if unidad.video_url %}
+                            <a href="{{ unidad.video_url }}" class="btn btn-primary btn-sm" target="_blank" title="Ver Video">🎥</a>
+                        {% endif %}
+                    </td>
+                    <td class="text-center">
                         <div class="btn-group" role="group">
                             <a href="{% url 'unidad_detail' unidad.pk %}" class="btn btn-info btn-sm" title="Ver Detalles">📄</a>
                             <a href="{% url 'unidad_update' unidad.pk %}" class="btn btn-warning btn-sm" title="Editar">✏️</a>
-                            <a href="{% url 'unidad_delete' unidad.pk %}" class="btn btn-danger btn-sm" title="Eliminar">🗑️</a>
+                            <a href="{% url 'unidad_delete' unidad.pk %}" class="btn btn-danger btn-sm btn-delete" title="Eliminar">🗑️</a>
                         </div>
                     </td>
                 </tr>
                 {% empty %}
                 <tr>
-                    <td colspan="5" class="text-center text-muted">⚠️ No hay unidades registradas.</td>
+                    <td colspan="6" class="text-center text-muted">⚠️ No hay unidades registradas.</td>
                 </tr>
                 {% endfor %}
             </tbody>
@@ -101,39 +107,39 @@
     <!-- Paginación -->
     {% if unidades.has_other_pages %}
     <nav aria-label="Paginación">
-        <ul class="pagination justify-content-center mt-3">
+        <ul class="pagination justify-content-center">
             {% if unidades.has_previous %}
-                <li class="page-item">
-                    <a class="page-link" href="?q={{ request.GET.q }}&nivel={{ request.GET.nivel }}&grado={{ request.GET.grado }}&curso={{ request.GET.curso }}&page=1">⏮️ Primera</a>
-                </li>
-                <li class="page-item">
-                    <a class="page-link" href="?q={{ request.GET.q }}&nivel={{ request.GET.nivel }}&grado={{ request.GET.grado }}&curso={{ request.GET.curso }}&page={{ unidades.previous_page_number }}">⬅️ Anterior</a>
-                </li>
+                <li class="page-item"><a class="page-link" href="?page=1">&laquo; Primero</a></li>
+                <li class="page-item"><a class="page-link" href="?page={{ unidades.previous_page_number }}">&lt;</a></li>
             {% endif %}
 
-            <li class="page-item active">
-                <span class="page-link">Página {{ unidades.number }} de {{ unidades.paginator.num_pages }}</span>
-            </li>
+            <li class="page-item active"><span class="page-link">Página {{ unidades.number }} de {{ unidades.paginator.num_pages }}</span></li>
 
             {% if unidades.has_next %}
-                <li class="page-item">
-                    <a class="page-link" href="?q={{ request.GET.q }}&nivel={{ request.GET.nivel }}&grado={{ request.GET.grado }}&curso={{ request.GET.curso }}&page={{ unidades.next_page_number }}">Siguiente ➡️</a>
-                </li>
-                <li class="page-item">
-                    <a class="page-link" href="?q={{ request.GET.q }}&nivel={{ request.GET.nivel }}&grado={{ request.GET.grado }}&curso={{ request.GET.curso }}&page={{ unidades.paginator.num_pages }}">Última ⏭️</a>
-                </li>
+                <li class="page-item"><a class="page-link" href="?page={{ unidades.next_page_number }}">&gt;</a></li>
+                <li class="page-item"><a class="page-link" href="?page={{ unidades.paginator.num_pages }}">Último &raquo;</a></li>
             {% endif %}
         </ul>
     </nav>
     {% endif %}
 </div>
 
-<!-- Habilitar tooltips de Bootstrap -->
+<!-- Scripts -->
 <script>
 document.addEventListener("DOMContentLoaded", function() {
+    // Habilitar tooltips de Bootstrap
     var tooltipTriggerList = document.querySelectorAll('[data-bs-toggle="tooltip"]');
     tooltipTriggerList.forEach(function(el) {
         new bootstrap.Tooltip(el);
+    });
+
+    // Confirmación al eliminar
+    document.querySelectorAll(".btn-delete").forEach(function(btn) {
+        btn.addEventListener("click", function(event) {
+            if (!confirm("⚠️ ¿Estás seguro de que deseas eliminar esta unidad?")) {
+                event.preventDefault();
+            }
+        });
     });
 });
 </script>

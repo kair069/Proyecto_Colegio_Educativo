@@ -56,20 +56,39 @@ from .models import Grado
 class GradoForm(forms.ModelForm):
     class Meta:
         model = Grado
-        fields = ['nivel', 'nombre', 'descripcion', 'imagen']  # Usamos el campo 'imagen' que ahora es un URLField
+        fields = ['nivel', 'nombre', 'descripcion', 'imagen']
         widgets = {
-            'nivel': forms.Select(attrs={'class': 'form-control', 'title': 'Seleccione el nivel educativo (Primaria o Secundaria)'}),
-            'nombre': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Ejemplo: 1° de Secundaria', 'title': 'Ingrese el nombre del grado'}),
-            'descripcion': forms.Textarea(attrs={'class': 'form-control', 'placeholder': 'Descripción del grado', 'rows': 3, 'title': 'Proporcione una breve descripción del grado'}),
-            'imagen': forms.URLInput(attrs={'class': 'form-control', 'placeholder': 'Ingrese el enlace de la imagen', 'title': 'Proporcione un enlace a una imagen'}),  # Cambié a URLInput
+            'nivel': forms.Select(attrs={
+                'class': 'form-control',
+                'title': 'Seleccione el nivel educativo (Primaria o Secundaria)',
+            }),
+            'nombre': forms.Select(attrs={
+                'class': 'form-control',
+                'title': 'Seleccione el grado',
+            }),
+            'descripcion': forms.Textarea(attrs={
+                'class': 'form-control',
+                'placeholder': 'Ingrese una breve descripción del grado',
+                'rows': 3,
+                'title': 'Proporcione detalles sobre el grado',
+            }),
+            'imagen': forms.URLInput(attrs={
+                'class': 'form-control',
+                'placeholder': 'https://ejemplo.com/imagen.jpg',
+                'title': 'Ingrese un enlace válido a una imagen',
+            }),
         }
         labels = {
             'nivel': 'Nivel Educativo',
-            'nombre': 'Nombre del Grado',
-            'descripcion': 'Descripción del Grado',
-            'imagen': 'Imagen del Grado (URL)',
+            'nombre': 'Grado',
+            'descripcion': 'Descripción',
+            'imagen': 'Imagen (URL)',
         }
 
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        # Reemplazamos el campo de nombre con un Select dinámico
+        self.fields['nombre'].widget.choices = Grado.GRADOS_CHOICES
 
 ####################################################################################################
 
@@ -192,14 +211,42 @@ class AlumnoDetalleForm(forms.ModelForm):
 from django import forms
 from .models import Docente
 
+# class DocenteForm(forms.ModelForm):
+#     class Meta:
+#         model = Docente
+#         fields = ['nombre', 'apellido']
+#         widgets = {
+#             'nombre': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Ingrese el nombre'}),
+#             'apellido': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Ingrese el apellido'}),
+#         }
+
+from django import forms
+from django.contrib.auth.models import User
+from .models import Docente
+
+from django import forms
+from django.contrib.auth.models import User
+from .models import Docente
+
 class DocenteForm(forms.ModelForm):
+    usuario = forms.ModelChoiceField(
+        queryset=User.objects.none(),  # Se asigna dinámicamente en __init__
+        required=True,
+        widget=forms.Select(attrs={'class': 'form-control'})
+    )
+
     class Meta:
         model = Docente
-        fields = ['nombre', 'apellido']
+        fields = ['usuario', 'nombre', 'apellido']
         widgets = {
             'nombre': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Ingrese el nombre'}),
             'apellido': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Ingrese el apellido'}),
         }
+
+    def __init__(self, *args, **kwargs):
+        super(DocenteForm, self).__init__(*args, **kwargs)
+        # Asignamos dinámicamente el queryset para evitar errores de base de datos
+        self.fields['usuario'].queryset = User.objects.filter(groups__name='Profesor')
 
 
 ####################################################################################################
@@ -376,38 +423,70 @@ from django import forms
 from .models import Unidad
 from ckeditor.widgets import CKEditorWidget
 
+from django import forms
+from ckeditor.widgets import CKEditorWidget
+from .models import Unidad
+
 class UnidadForm(forms.ModelForm):
     class Meta:
         model = Unidad
-        fields = ['curso', 'nombre', 'descripcion', 'numero']
+        fields = ['curso', 'nombre', 'descripcion', 'numero', 'material_pdf', 'video_url']
+        
         widgets = {
             'curso': forms.Select(attrs={
-                'class': 'form-control',
+                'class': 'form-control select2',
                 'style': 'width: 100%;',
+                'data-placeholder': 'Seleccione un curso...',
             }),
             'nombre': forms.TextInput(attrs={
                 'class': 'form-control',
-                'placeholder': 'Ingrese el nombre de la unidad',
+                'placeholder': 'Ejemplo: Introducción a la suma y resta',
+                'autocomplete': 'off',
+                'list': 'sugerencias_unidad',
             }),
-            'descripcion': CKEditorWidget(),
+            'descripcion': CKEditorWidget(config_name='default', attrs={
+                'class': 'form-control',
+                'style': 'min-height: 150px;',
+            }),
             'numero': forms.NumberInput(attrs={
                 'class': 'form-control',
                 'min': 1,
-                'placeholder': 'Número de la unidad',
+                'placeholder': 'Ejemplo: 1 (Primera unidad)',
+            }),
+            'material_pdf': forms.ClearableFileInput(attrs={
+                'class': 'form-control',
+                'accept': 'application/pdf',
+            }),
+            'video_url': forms.URLInput(attrs={
+                'class': 'form-control',
+                'placeholder': 'https://www.youtube.com/watch?v=...',
             }),
         }
+
         labels = {
             'curso': 'Curso asociado',
             'nombre': 'Nombre de la Unidad',
             'descripcion': 'Descripción Detallada',
             'numero': 'Número de Unidad',
+            'material_pdf': 'Material PDF (Opcional)',
+            'video_url': 'Video de YouTube (Opcional)',
         }
+
         help_texts = {
             'curso': 'Seleccione el curso al que pertenece esta unidad.',
-            'nombre': 'Ejemplo: "Introducción a la suma y resta".',
-            'descripcion': 'Puede incluir imágenes, videos y formatos de texto.',
-            'numero': 'Ejemplo: 1 para la primera unidad, 2 para la segunda, etc.',
+            'nombre': 'Nombre representativo de la unidad.',
+            'descripcion': 'Puede incluir imágenes, videos y texto enriquecido.',
+            'numero': 'Orden dentro del curso (Ejemplo: 1, 2, 3...).',
+            'material_pdf': 'Suba un archivo PDF relacionado con la unidad.',
+            'video_url': 'Ingrese un enlace de YouTube válido.',
         }
+
+    def clean_video_url(self):
+        """Valida que el enlace ingresado sea un video de YouTube"""
+        video_url = self.cleaned_data.get('video_url')
+        if video_url and "youtube.com/watch?v=" not in video_url and "youtu.be/" not in video_url:
+            raise forms.ValidationError("Ingrese un enlace válido de YouTube.")
+        return video_url
 
 
 ####################################################################################################
@@ -572,3 +651,18 @@ class RegistroForm(forms.ModelForm):
     class Meta:
         model = User
         fields = ['username', 'email', 'password']
+
+
+####################################################################################################USUARIOS
+# Formulario para editar usuario
+class UserForm(forms.ModelForm):
+    class Meta:
+        model = User
+        fields = ['username', 'email', 'first_name', 'last_name', 'is_active']
+        widgets = {
+            'username': forms.TextInput(attrs={'class': 'form-control'}),
+            'email': forms.EmailInput(attrs={'class': 'form-control'}),
+            'first_name': forms.TextInput(attrs={'class': 'form-control'}),
+            'last_name': forms.TextInput(attrs={'class': 'form-control'}),
+            'is_active': forms.CheckboxInput(attrs={'class': 'form-check-input'}),
+        }        

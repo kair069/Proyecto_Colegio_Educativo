@@ -1,4 +1,4 @@
-from django.urls import path
+from django.urls import path, reverse_lazy
 
 from .views import home, salida
 from .views import NivelListView, NivelCreateView, NivelUpdateView, NivelDeleteView
@@ -8,6 +8,8 @@ from .views import (
     PeriodoListView, PeriodoCreateView, 
     PeriodoUpdateView, PeriodoDeleteView
 )
+
+from .views import autocompletar_evento
 from . import views
 from .views import (
     AlumnoListView,
@@ -57,6 +59,8 @@ from .views import (
     CalificacionUpdateView,
     CalificacionDeleteView,
 )
+from django.contrib.auth.models import Group
+from django.views.generic import ListView, CreateView, UpdateView, DeleteView
 from .views import agregar_horarioo
 from .views import ExportarTrabajosExcel
 from .views import UnidadListView, UnidadCreateView, UnidadUpdateView, UnidadDeleteView, UnidadDetailView,exportar_unidad_word,exportar_unidad_pdf
@@ -67,8 +71,11 @@ from .views import calendario_academico, agregar_evento, editar_evento, eliminar
 from .views import reproductor_mp3
 
 from .views import listar_horarios, agregar_horario, editar_horario, eliminar_horario
-
+from .views import UserListView, UserUpdateView, UserDeleteView
 from .views import calificar_trabajo
+from django.urls import path
+from .views import asignar_usuarios_a_grupo
+
 urlpatterns = [
     path('niveles/', NivelListView.as_view(), name='nivel_list'),
     path('niveles/nuevo/', NivelCreateView.as_view(), name='nivel_create'),
@@ -214,9 +221,22 @@ urlpatterns = [
     path('salida/', salida, name='salida'),
 
 
+    # CRUD de Usuarios
+    path('usuarios/', UserListView.as_view(), name='user_list'),
+    path('usuarios/editar/<int:pk>/', UserUpdateView.as_view(), name='user_edit'),
+    path('usuarios/eliminar/<int:pk>/', UserDeleteView.as_view(), name='user_delete'),
+    
 
 
+    path('grupos/', ListView.as_view(model=Group, template_name='groups/group_list.html'), name='group_list'),
+    path('grupos/crear/', CreateView.as_view(model=Group, fields=['name'], template_name='groups/group_form.html', success_url=reverse_lazy('group_list')), name='group_create'),
+    path('grupos/editar/<int:pk>/', UpdateView.as_view(model=Group, fields=['name'], template_name='groups/group_form.html', success_url=reverse_lazy('group_list')), name='group_update'),
+    path('grupos/eliminar/<int:pk>/', DeleteView.as_view(model=Group, template_name='groups/group_confirm_delete.html', success_url=reverse_lazy('group_list')), name='group_delete'),
 
+    path('grupos/<int:group_id>/asignar/', asignar_usuarios_a_grupo, name='asignar_usuarios_a_grupo'),
+    
+
+    path('autocompletar-evento/', autocompletar_evento, name='autocompletar_evento'),
 
 
 

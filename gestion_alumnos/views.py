@@ -9,7 +9,7 @@ from django.contrib import messages
 from django.shortcuts import render
 from django.views.generic import ListView, CreateView, UpdateView, DeleteView
 from .models import Nivel
-from .forms import NivelForm
+from .forms import NivelForm, UserForm
 ####################################################################################################
 from django.shortcuts import render
 from django.views.generic import ListView, CreateView
@@ -29,22 +29,19 @@ class NivelListView(LoginRequiredMixin, ListView):
     paginate_by = 10  # Paginar los niveles para no mostrar todos en una sola página
     
     def get_queryset(self):
-        # Puedes ordenar los niveles si lo deseas (por nombre, fecha de creación, etc.)
-        return Nivel.objects.all().order_by('-fecha_creacion')  # Ejemplo de orden por fecha de creación
+        return Nivel.objects.all().order_by('-fecha_creacion')  # Orden por fecha de creación
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        # Añadir paginación
         context['paginator'] = Paginator(Nivel.objects.all(), self.paginate_by)
         return context
 
     def dispatch(self, request, *args, **kwargs):
-        # Solo los usuarios del grupo "Administrador" o "Profesor" pueden ver la lista de niveles
-        if not request.user.groups.filter(name='Administrador').exists() and not request.user.groups.filter(name='Profesor').exists():
+        # Todos los grupos pueden ver los niveles
+        if not request.user.groups.filter(name__in=['Administrador', 'Alumnos', 'Docente', 'Profesor']).exists():
             messages.error(request, 'No tienes permisos para ver los niveles.')
-            return redirect('home')  # O redirigir a otra vista según el caso
+            return redirect('home')
         return super().dispatch(request, *args, **kwargs)
-
 
 
 class NivelCreateView(LoginRequiredMixin, CreateView):
@@ -54,8 +51,7 @@ class NivelCreateView(LoginRequiredMixin, CreateView):
     success_url = reverse_lazy('nivel_list')
 
     def form_valid(self, form):
-        # Asignamos el usuario autenticado como creador del nivel Modificacion para roles
-        form.instance.creado_por = self.request.user  # Asignamos el usuario autenticado
+        form.instance.creado_por = self.request.user  # Asignar el usuario autenticado
         messages.success(self.request, 'Nivel creado exitosamente.')
         return super().form_valid(form)
 
@@ -64,10 +60,10 @@ class NivelCreateView(LoginRequiredMixin, CreateView):
         return super().form_invalid(form)
 
     def dispatch(self, request, *args, **kwargs):
-        # Solo los usuarios del grupo "Administrador" pueden crear niveles
+        # Solo el Administrador puede crear niveles
         if not request.user.groups.filter(name='Administrador').exists():
             messages.error(request, 'No tienes permisos para crear niveles.')
-            return redirect('nivel_list')  # O redirigir a otra vista según el caso
+            return redirect('nivel_list')
         return super().dispatch(request, *args, **kwargs)
 
 
@@ -81,25 +77,11 @@ class NivelUpdateView(LoginRequiredMixin, UpdateView):
         messages.success(self.request, 'Nivel actualizado exitosamente.')
         return super().form_valid(form)
     
-    def get_queryset(self):
-        # Si el usuario pertenece al grupo "Profesor", solo puede acceder a los niveles que ha creado
-        if self.request.user.groups.filter(name='Profesor').exists():
-            return Nivel.objects.filter(creado_por=self.request.user)
-        return Nivel.objects.all()
-
     def dispatch(self, request, *args, **kwargs):
-        nivel = self.get_object()
-
-        # Restricción adicional: si el usuario es un "Profesor" y no es el creador, no puede editar el nivel
-        if request.user.groups.filter(name='Profesor').exists() and nivel.creado_por != request.user:
-            messages.error(request, "No puedes modificar niveles creados por otros.")
-            return redirect('nivel_list')
-
-        # Validación para grupos específicos (como Administrador) para permitir la actualización
+        # Solo el Administrador puede actualizar niveles
         if not request.user.groups.filter(name='Administrador').exists():
             messages.error(request, 'No tienes permisos para editar niveles.')
-            return redirect('nivel_list')  # O redirigir a otra vista según el caso
-        
+            return redirect('nivel_list')
         return super().dispatch(request, *args, **kwargs)
 
 
@@ -113,20 +95,11 @@ class NivelDeleteView(LoginRequiredMixin, DeleteView):
         return super().delete(request, *args, **kwargs)
 
     def dispatch(self, request, *args, **kwargs):
-        nivel = self.get_object()
-
-        # Si el usuario no es superusuario, se le niega el acceso
-        if not request.user.is_superuser:
-            messages.error(request, "No tienes permisos para eliminar niveles.")
+        # Solo el Administrador puede eliminar niveles
+        if not request.user.groups.filter(name='Administrador').exists():
+            messages.error(request, 'No tienes permisos para eliminar niveles.')
             return redirect('nivel_list')
-
-        # Si el usuario es del grupo 'Profesor', se limita la eliminación a los niveles que ha creado
-        if request.user.groups.filter(name='Profesor').exists() and nivel.creado_por != request.user:
-            messages.error(request, "No puedes eliminar niveles creados por otros.")
-            return redirect('nivel_list')
-
         return super().dispatch(request, *args, **kwargs)
-
 
 
 ####################################################################################################
@@ -137,80 +110,181 @@ from .models import Grado
 from .forms import GradoForm
 
 # LISTAR GRADOS
-class GradoListView(LoginRequiredMixin,ListView):
+class GradoListView(LoginRequiredMixin, ListView):
     model = Grado
     template_name = 'Grados_mi_app/grado_list.html'
     context_object_name = 'grados'
 
-    # Opcional: Personalización para incluir campos adicionales en el contexto, si es necesario
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context['grados'] = Grado.objects.all()  # Se asegura de pasar los grados
+        context['grados'] = Grado.objects.all()
         return context
     
     def dispatch(self, request, *args, **kwargs):
-        # Solo los usuarios del grupo "Administrador" o "Profesor" pueden ver la lista de niveles
-        if not request.user.groups.filter(name='Administrador').exists() and not request.user.groups.filter(name='Profesor').exists():
-            messages.error(request, 'No tienes permisos para ver los niveles.')
-            return redirect('home')  # O redirigir a otra vista según el caso
+        # Todos los usuarios pueden ver la lista de grados
+        if not request.user.groups.filter(name__in=['Administrador', 'Alumnos', 'Docente', 'Profesor']).exists():
+            messages.error(request, 'No tienes permisos para ver los grados.')
+            return redirect('home')
         return super().dispatch(request, *args, **kwargs)
 
 from django.contrib import messages
 from django.urls import reverse_lazy
-from django.views.generic.edit import CreateView
+from django.views.generic.edit import CreateView, UpdateView, DeleteView
 from .forms import GradoForm
 from .models import Grado
 
-class GradoCreateView(CreateView):
+from django.contrib import messages
+from django.urls import reverse_lazy
+from django.views.generic import ListView
+from django.views.generic.edit import CreateView, UpdateView, DeleteView
+from django.contrib.auth.mixins import LoginRequiredMixin
+from django.shortcuts import redirect
+from .forms import GradoForm
+from .models import Grado
+
+# LISTAR GRADOS
+class GradoListView(LoginRequiredMixin, ListView):
+    model = Grado
+    template_name = 'Grados_mi_app/grado_list.html'
+    context_object_name = 'grados'
+
+    def get_queryset(self):
+        return Grado.objects.all()
+
+    def dispatch(self, request, *args, **kwargs):
+        # Todos los usuarios en los grupos especificados pueden ver la lista de grados
+        if not request.user.groups.filter(name__in=['Administrador', 'Alumnos', 'Docente', 'Profesor']).exists():
+            messages.error(request, 'No tienes permisos para ver los grados.')
+            return redirect('home')
+        return super().dispatch(request, *args, **kwargs)
+
+# Clase base para verificar permisos de administrador
+class AdminRequiredMixin(LoginRequiredMixin):
+    def tiene_permiso_admin(self, request):
+        if not request.user.groups.filter(name='Administrador').exists():
+            messages.error(request, 'No tienes permisos para realizar esta acción.')
+            return redirect('grado_list')
+        return None
+
+# CREAR GRADO
+class GradoCreateView(AdminRequiredMixin, CreateView):
     model = Grado
     form_class = GradoForm
     template_name = 'Grados_mi_app/grado_form.html'
     success_url = reverse_lazy('grado_list')
 
     def form_valid(self, form):
-        # Imprimir errores si los hay
-        if form.errors:
-            print(form.errors)  # Esto mostrará los errores en la consola del servidor
         messages.success(self.request, 'Grado creado exitosamente.')
         return super().form_valid(form)
 
     def form_invalid(self, form):
-        # Imprimir errores si el formulario no es válido
-        print(form.errors)  # Muestra los errores en la consola
         messages.error(self.request, 'Hubo un error al crear el grado. Por favor, revisa los datos.')
         return super().form_invalid(form)
 
-    
-
+    def dispatch(self, request, *args, **kwargs):
+        permiso = self.tiene_permiso_admin(request)
+        return permiso if permiso else super().dispatch(request, *args, **kwargs)
 
 # EDITAR GRADO
-class GradoUpdateView(UpdateView):
+class GradoUpdateView(AdminRequiredMixin, UpdateView):
     model = Grado
     form_class = GradoForm
     template_name = 'Grados_mi_app/grado_form.html'
     success_url = reverse_lazy('grado_list')
 
+    def dispatch(self, request, *args, **kwargs):
+        permiso = self.tiene_permiso_admin(request)
+        return permiso if permiso else super().dispatch(request, *args, **kwargs)
+
 # ELIMINAR GRADO
-class GradoDeleteView(DeleteView):
+class GradoDeleteView(AdminRequiredMixin, DeleteView):
     model = Grado
     template_name = 'Grados_mi_app/grado_confirm_delete.html'
     success_url = reverse_lazy('grado_list')
+
+    def dispatch(self, request, *args, **kwargs):
+        permiso = self.tiene_permiso_admin(request)
+        return permiso if permiso else super().dispatch(request, *args, **kwargs)
+
+
 ####################################################################################################
 from django.shortcuts import render, get_object_or_404, redirect
 from django.contrib import messages
 from django.views.generic import ListView, CreateView, UpdateView, DeleteView
 from django.urls import reverse_lazy
-from .models import Seccion
-from .forms import SeccionForm
+from django.contrib.auth.mixins import LoginRequiredMixin
+from .models import Grado, Seccion
+from .forms import GradoForm, SeccionForm
 
-# Vista para listar las secciones
-class SeccionListView(ListView):
+# LISTAR GRADOS
+class GradoListView(LoginRequiredMixin, ListView):
+    model = Grado
+    template_name = 'Grados_mi_app/grado_list.html'
+    context_object_name = 'grados'
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['grados'] = Grado.objects.all()
+        return context
+    
+    def dispatch(self, request, *args, **kwargs):
+        if not request.user.groups.filter(name__in=['Administrador', 'Alumnos', 'Docente', 'Profesor']).exists():
+            messages.error(request, 'No tienes permisos para ver los grados.')
+            return redirect('home')
+        return super().dispatch(request, *args, **kwargs)
+
+class GradoCreateView(LoginRequiredMixin, CreateView):
+    model = Grado
+    form_class = GradoForm
+    template_name = 'Grados_mi_app/grado_form.html'
+    success_url = reverse_lazy('grado_list')
+
+    def form_valid(self, form):
+        messages.success(self.request, 'Grado creado exitosamente.')
+        return super().form_valid(form)
+
+    def dispatch(self, request, *args, **kwargs):
+        if not request.user.groups.filter(name='Administrador').exists():
+            messages.error(request, 'No tienes permisos para crear grados.')
+            return redirect('grado_list')
+        return super().dispatch(request, *args, **kwargs)
+
+class GradoUpdateView(LoginRequiredMixin, UpdateView):
+    model = Grado
+    form_class = GradoForm
+    template_name = 'Grados_mi_app/grado_form.html'
+    success_url = reverse_lazy('grado_list')
+
+    def dispatch(self, request, *args, **kwargs):
+        if not request.user.groups.filter(name='Administrador').exists():
+            messages.error(request, 'No tienes permisos para actualizar grados.')
+            return redirect('grado_list')
+        return super().dispatch(request, *args, **kwargs)
+
+class GradoDeleteView(LoginRequiredMixin, DeleteView):
+    model = Grado
+    template_name = 'Grados_mi_app/grado_confirm_delete.html'
+    success_url = reverse_lazy('grado_list')
+
+    def dispatch(self, request, *args, **kwargs):
+        if not request.user.groups.filter(name='Administrador').exists():
+            messages.error(request, 'No tienes permisos para eliminar grados.')
+            return redirect('grado_list')
+        return super().dispatch(request, *args, **kwargs)
+
+# LISTAR SECCIONES
+class SeccionListView(LoginRequiredMixin, ListView):
     model = Seccion
     template_name = "seccion/seccion_list.html"
     context_object_name = "secciones"
 
-# Vista para crear una nueva sección
-class SeccionCreateView(CreateView):
+    def dispatch(self, request, *args, **kwargs):
+        if not request.user.groups.filter(name__in=['Administrador', 'Alumnos', 'Docente', 'Profesor']).exists():
+            messages.error(request, 'No tienes permisos para ver las secciones.')
+            return redirect('home')
+        return super().dispatch(request, *args, **kwargs)
+
+class SeccionCreateView(LoginRequiredMixin, CreateView):
     model = Seccion
     form_class = SeccionForm
     template_name = "seccion/seccion_form.html"
@@ -220,28 +294,34 @@ class SeccionCreateView(CreateView):
         messages.success(self.request, "Sección creada exitosamente.")
         return super().form_valid(form)
 
-# Vista para actualizar una sección existente
-class SeccionUpdateView(UpdateView):
+    def dispatch(self, request, *args, **kwargs):
+        if not request.user.groups.filter(name='Administrador').exists():
+            messages.error(request, 'No tienes permisos para crear secciones.')
+            return redirect('seccion_list')
+        return super().dispatch(request, *args, **kwargs)
+
+class SeccionUpdateView(LoginRequiredMixin, UpdateView):
     model = Seccion
     form_class = SeccionForm
     template_name = "seccion/seccion_form.html"
     success_url = reverse_lazy("seccion_list")
 
-    def form_valid(self, form):
-        messages.success(self.request, "Sección actualizada exitosamente.")
-        return super().form_valid(form)
+    def dispatch(self, request, *args, **kwargs):
+        if not request.user.groups.filter(name='Administrador').exists():
+            messages.error(request, 'No tienes permisos para actualizar secciones.')
+            return redirect('seccion_list')
+        return super().dispatch(request, *args, **kwargs)
 
-# Vista para eliminar una sección
-class SeccionDeleteView(DeleteView):
+class SeccionDeleteView(LoginRequiredMixin, DeleteView):
     model = Seccion
     template_name = "seccion/seccion_confirm_delete.html"
     success_url = reverse_lazy("seccion_list")
 
-    def delete(self, request, *args, **kwargs):
-        messages.success(self.request, "Sección eliminada exitosamente.")
-        return super().delete(request, *args, **kwargs)
-
-
+    def dispatch(self, request, *args, **kwargs):
+        if not request.user.groups.filter(name='Administrador').exists():
+            messages.error(request, 'No tienes permisos para eliminar secciones.')
+            return redirect('seccion_list')
+        return super().dispatch(request, *args, **kwargs)
 
 ####################################################################################################
 from django.shortcuts import render, get_object_or_404, redirect
@@ -431,36 +511,76 @@ from django.urls import reverse_lazy
 from .models import Docente
 from .forms import DocenteForm
 
-# Vista para listar los docentes
+from django.contrib import messages
+from django.contrib.auth.mixins import UserPassesTestMixin
+from django.contrib.auth.models import User
+from django.shortcuts import redirect
+from django.urls import reverse_lazy
+from django.views.generic import ListView, CreateView, UpdateView, DeleteView
+from .models import Docente
+from .forms import DocenteForm
+
+
+# 🔹 Mixin para verificar si el usuario es administrador
+class AdminRequiredMixin(UserPassesTestMixin):
+    def test_func(self):
+        return self.request.user.groups.filter(name='Administrador').exists()
+
+    def handle_no_permission(self):
+        messages.error(self.request, "No tienes permisos para acceder a esta sección.")
+        return redirect("docente_list")
+
+
+# 🔹 Vista para listar docentes
 class DocenteListView(ListView):
     model = Docente
     template_name = "docente/docente_list.html"
     context_object_name = "docentes"
 
-# Vista para crear un nuevo docente
-class DocenteCreateView(CreateView):
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context["es_admin"] = self.request.user.groups.filter(name="Administrador").exists()
+        return context
+
+
+# 🔹 Vista para crear docentes
+class DocenteCreateView(AdminRequiredMixin, CreateView):
     model = Docente
     form_class = DocenteForm
     template_name = "docente/docente_form.html"
     success_url = reverse_lazy("docente_list")
 
     def form_valid(self, form):
+        usuario = form.cleaned_data['usuario']
+
+        if Docente.objects.filter(usuario=usuario).exists():
+            messages.error(self.request, "Este usuario ya está asignado a un docente.")
+            return self.form_invalid(form)
+
         messages.success(self.request, "Docente registrado exitosamente.")
         return super().form_valid(form)
 
-# Vista para actualizar un docente existente
-class DocenteUpdateView(UpdateView):
+
+# 🔹 Vista para actualizar docentes
+class DocenteUpdateView(AdminRequiredMixin, UpdateView):
     model = Docente
     form_class = DocenteForm
     template_name = "docente/docente_form.html"
     success_url = reverse_lazy("docente_list")
 
     def form_valid(self, form):
+        usuario = form.cleaned_data['usuario']
+
+        if Docente.objects.exclude(id=self.object.id).filter(usuario=usuario).exists():
+            messages.error(self.request, "Este usuario ya está asignado a otro docente.")
+            return self.form_invalid(form)
+
         messages.success(self.request, "Docente actualizado exitosamente.")
         return super().form_valid(form)
 
-# Vista para eliminar un docente
-class DocenteDeleteView(DeleteView):
+
+# 🔹 Vista para eliminar docentes
+class DocenteDeleteView(AdminRequiredMixin, DeleteView):
     model = Docente
     template_name = "docente/docente_confirm_delete.html"
     success_url = reverse_lazy("docente_list")
@@ -468,6 +588,8 @@ class DocenteDeleteView(DeleteView):
     def delete(self, request, *args, **kwargs):
         messages.success(self.request, "Docente eliminado exitosamente.")
         return super().delete(request, *args, **kwargs)
+
+
 
 ####################################################################################################
 from django.shortcuts import render, get_object_or_404, redirect
@@ -1737,20 +1859,69 @@ from .models import EventoCalendario
 from .forms import EventoCalendarioForm
 from django.contrib import messages
 
+from django.core.paginator import Paginator
+from django.db.models import Q
+from django.shortcuts import render
+from .models import EventoCalendario
+
 def calendario_academico(request):
+    # Obtener los parámetros de filtro desde la URL
+    tipo_evento = request.GET.get('tipo_evento', '')
+    fecha_inicio = request.GET.get('fecha_inicio', '')
+    fecha_fin = request.GET.get('fecha_fin', '')
+
+    # Filtrar eventos según los parámetros
     eventos = EventoCalendario.objects.all()
-    return render(request, 'calendario/calendario.html', {'eventos': eventos})
+    
+    if tipo_evento:
+        eventos = eventos.filter(tipo_evento=tipo_evento)
+
+    if fecha_inicio and fecha_fin:
+        eventos = eventos.filter(fecha_inicio__gte=fecha_inicio, fecha_fin__lte=fecha_fin)
+
+    # Paginación (5 eventos por página)
+    paginator = Paginator(eventos, 5)  
+    page_number = request.GET.get('page')
+    eventos_paginados = paginator.get_page(page_number)
+
+    return render(request, 'calendario/calendario.html', {
+        'eventos': eventos_paginados,
+        'tipo_evento': tipo_evento,
+        'fecha_inicio': fecha_inicio,
+        'fecha_fin': fecha_fin
+    })
+
+from django.http import JsonResponse
+
+from django.shortcuts import render
+from django.contrib import messages
+from .forms import EventoCalendarioForm
 
 def agregar_evento(request):
+    form = EventoCalendarioForm()
+
     if request.method == 'POST':
         form = EventoCalendarioForm(request.POST)
         if form.is_valid():
             form.save()
-            messages.success(request, "Evento agregado exitosamente.")
-            return redirect('calendario')
-    else:
-        form = EventoCalendarioForm()
+            messages.success(request, "✅ Evento agregado exitosamente.")
+            form = EventoCalendarioForm()  # Reiniciar el formulario después de guardar
+
     return render(request, 'calendario/evento_form.html', {'form': form, 'accion': 'Agregar Evento'})
+
+
+from django.http import JsonResponse
+from django.db.models import Q
+from .models import EventoCalendario
+
+def autocompletar_evento(request):
+    if 'term' in request.GET:
+        term = request.GET.get('term')
+        eventos = EventoCalendario.objects.filter(
+            Q(titulo__icontains=term)
+        ).values_list('titulo', flat=True).distinct()
+        
+        return JsonResponse(list(eventos), safe=False)
 
 def editar_evento(request, evento_id):
     evento = get_object_or_404(EventoCalendario, id=evento_id)
@@ -1809,21 +1980,35 @@ from django.views.generic import ListView
 from .models import Unidad, Curso
 from django.db.models import Q
 
+from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
+
 class UnidadListView(ListView):
     model = Unidad
     template_name = "unidades/listar_unidades.html"
     context_object_name = "unidades"
-    ordering = ['curso__grado__nivel__nombre', 'curso__grado__nombre', 'curso__nombre', 'numero']
-    paginate_by = 10  # Paginación: 10 unidades por página
+    paginate_by = 10  # 10 unidades por página
 
     def get_queryset(self):
-        queryset = super().get_queryset().select_related("curso__grado__nivel")  # Optimizar consulta
+        queryset = super().get_queryset().select_related("curso__grado__nivel")  
+
+        # Obtener parámetros de búsqueda y filtrado
         query = self.request.GET.get("q", "").strip()
         curso_id = self.request.GET.get("curso", "")
         grado_id = self.request.GET.get("grado", "")
         nivel_id = self.request.GET.get("nivel", "")
+        orden = self.request.GET.get("orden", "curso__grado__nivel__nombre")  # Orden por defecto
 
-        # Aplicar filtros
+        # Validar IDs y aplicar filtros
+        filtros = {}
+        if curso_id.isdigit():
+            filtros["curso_id"] = int(curso_id)
+        if grado_id.isdigit():
+            filtros["curso__grado_id"] = int(grado_id)
+        if nivel_id.isdigit():
+            filtros["curso__grado__nivel_id"] = int(nivel_id)
+        
+        queryset = queryset.filter(**filtros)
+
         if query:
             queryset = queryset.filter(
                 Q(nombre__icontains=query) | 
@@ -1832,21 +2017,40 @@ class UnidadListView(ListView):
                 Q(curso__grado__nombre__icontains=query) |
                 Q(curso__grado__nivel__nombre__icontains=query)
             )
-        if curso_id:
-            queryset = queryset.filter(curso_id=curso_id)
-        if grado_id:
-            queryset = queryset.filter(curso__grado_id=grado_id)
-        if nivel_id:
-            queryset = queryset.filter(curso__grado__nivel_id=nivel_id)
+
+        # Aplicar ordenamiento dinámico
+        opciones_orden = {
+            "nombre": "nombre",
+            "numero": "numero",
+            "curso": "curso__nombre",
+            "grado": "curso__grado__nombre",
+            "nivel": "curso__grado__nivel__nombre"
+        }
+        queryset = queryset.order_by(opciones_orden.get(orden, "curso__grado__nivel__nombre"))
 
         return queryset
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
+
+        # Paginación mejorada
+        paginator = Paginator(self.get_queryset(), self.paginate_by)
+        page = self.request.GET.get("page")
+        try:
+            unidades_paginadas = paginator.page(page)
+        except PageNotAnInteger:
+            unidades_paginadas = paginator.page(1)
+        except EmptyPage:
+            unidades_paginadas = paginator.page(paginator.num_pages)
+
+        context["unidades"] = unidades_paginadas
         context["cursos"] = Curso.objects.all()
         context["grados"] = Grado.objects.all()
         context["niveles"] = Nivel.objects.all()
+        context["orden_actual"] = self.request.GET.get("orden", "curso__grado__nivel__nombre")
+
         return context
+
     
 
 
@@ -1910,17 +2114,29 @@ class UnidadListView(ListView):
 #
 
 # 📌 Crear una nueva unidad
-class UnidadCreateView(CreateView):
+from django.contrib import messages
+from django.urls import reverse_lazy
+from django.contrib.auth.mixins import LoginRequiredMixin
+from django.views.generic import CreateView
+from .models import Unidad
+from .forms import UnidadForm
+
+class UnidadCreateView(LoginRequiredMixin, CreateView):
     model = Unidad
     form_class = UnidadForm
     template_name = "unidades/form_unidad.html"
 
     def get_success_url(self):
-        return reverse_lazy("unidad_list")  # ✅ Si NO usas namespace
+        return reverse_lazy("unidad_list")  # Cambia si usas namespace
 
     def form_valid(self, form):
         messages.success(self.request, "✅ Unidad creada con éxito.")
         return super().form_valid(form)
+
+    def form_invalid(self, form):
+        messages.error(self.request, "❌ Hubo un error al crear la unidad. Verifica los campos.")
+        return super().form_invalid(form)
+
 
 # 📌 Editar unidad
 class UnidadUpdateView(UpdateView):
@@ -2546,22 +2762,42 @@ from django.shortcuts import render, redirect
 from .forms import RegistroForm
 from django.contrib.auth.models import Group
 
+from django.contrib.auth.models import User, Group
+
+from django.contrib.auth.models import User, Group
+
+from django.contrib.auth.models import User, Group
+
 def registro_usuario(request):
     if request.method == 'POST':
         form = RegistroForm(request.POST)
         if form.is_valid():
             usuario = form.save(commit=False)
             usuario.set_password(form.cleaned_data['password'])
-            usuario.save()
+            usuario.save()  # Se guarda el usuario para obtener un ID
 
-            # Asignar al grupo "Profesor" automáticamente
-            grupo_profesor, _ = Group.objects.get_or_create(name='Profesor')
-            usuario.groups.add(grupo_profesor)
+            # Verificar si es el primer usuario
+            if User.objects.count() == 1:  # Solo el primero
+                usuario.is_superuser = True
+                usuario.is_staff = True
+                usuario.save()  # Guardar cambios en permisos
+
+                # Asignar al grupo "Administrador"
+                grupo_admin, _ = Group.objects.get_or_create(name='Administrador')
+                usuario.groups.add(grupo_admin)
+            else:
+                # Asignar al grupo "Profesor" a los demás usuarios
+                grupo_profesor, _ = Group.objects.get_or_create(name='Profesor')
+                usuario.groups.add(grupo_profesor)
 
             return redirect('login')
     else:
         form = RegistroForm()
+
     return render(request, 'registration/registro.html', {'form': form})
+
+
+
 
 
 from django.shortcuts import render
@@ -2573,8 +2809,53 @@ def home(request):
 from django.shortcuts import render
 
 
+from django.shortcuts import render, redirect, get_object_or_404
+from django.contrib.auth.models import Group, User
+from django.contrib import messages
+from .decorators import administrador_requerido
+
+@administrador_requerido  # Restringe el acceso solo a los Administradores
+def asignar_usuarios_a_grupo(request, group_id):
+    grupo = get_object_or_404(Group, id=group_id)
+    usuarios = User.objects.all()
+
+    if request.method == 'POST':
+        usuarios_seleccionados = request.POST.getlist('usuarios')
+        grupo.user_set.set(usuarios_seleccionados)
+        messages.success(request, f'Usuarios asignados al grupo {grupo.name} correctamente.')
+        return redirect('group_list')
+
+    return render(request, 'groups/asignar_usuarios.html', {'grupo': grupo, 'usuarios': usuarios})
+
+
 
 def salida(request):
     return render(request, 'registration/salida.html')
 
 ####################################################################################################Detalle del Alumno
+
+
+
+
+
+
+####################################################################################################USUARIOS
+from django.contrib.auth.models import User
+# Lista de usuarios
+class UserListView(ListView):
+    model = User
+    template_name = "usuarios/user_list.html"
+    context_object_name = "usuarios"
+
+# Editar usuario
+class UserUpdateView(UpdateView):
+    model = User
+    form_class = UserForm
+    template_name = "usuarios/user_form.html"
+    success_url = reverse_lazy("user_list")
+
+# Eliminar usuario
+class UserDeleteView(DeleteView):
+    model = User
+    template_name = "usuarios/user_confirm_delete.html"
+    success_url = reverse_lazy("user_list")

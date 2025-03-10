@@ -4,7 +4,34 @@
 <div class="container mt-4">
     <h2 class="mt-5 text-center">📅 Calendario Académico</h2>
     <div class="row">
-        
+
+        <!-- 🔹 Formulario de Filtros -->
+        <div class="col-12 mb-3">
+            <form method="GET" class="row g-2">
+                <div class="col-md-3">
+                    <label for="tipo_evento" class="form-label">Tipo de Evento:</label>
+                    <select name="tipo_evento" id="tipo_evento" class="form-control">
+                        <option value="">Todos</option>
+                        <option value="Clase" {% if tipo_evento == "Clase" %}selected{% endif %}>Clase</option>
+                        <option value="Examen" {% if tipo_evento == "Examen" %}selected{% endif %}>Examen</option>
+                        <option value="Reunión" {% if tipo_evento == "Reunión" %}selected{% endif %}>Reunión</option>
+                        <option value="Otro" {% if tipo_evento == "Otro" %}selected{% endif %}>Otro</option>
+                    </select>
+                </div>
+                <div class="col-md-3">
+                    <label for="fecha_inicio" class="form-label">Fecha Inicio:</label>
+                    <input type="date" name="fecha_inicio" id="fecha_inicio" class="form-control" value="{{ fecha_inicio }}">
+                </div>
+                <div class="col-md-3">
+                    <label for="fecha_fin" class="form-label">Fecha Fin:</label>
+                    <input type="date" name="fecha_fin" id="fecha_fin" class="form-control" value="{{ fecha_fin }}">
+                </div>
+                <div class="col-md-3 d-flex align-items-end">
+                    <button type="submit" class="btn btn-primary w-100">🔍 Filtrar</button>
+                </div>
+            </form>
+        </div>
+
         <!-- 📌 Listado de Eventos (Izquierda - 30%) -->
         <div class="col-md-4">
             <a href="{% url 'agregar_evento' %}" class="btn btn-primary mb-3 w-100">➕ Agregar Evento</a>
@@ -38,6 +65,24 @@
                             {% endfor %}
                         </tbody>
                     </table>
+                    
+                    <!-- 🔹 Paginación -->
+                    <nav>
+                        <ul class="pagination justify-content-center">
+                            {% if eventos.has_previous %}
+                                <li class="page-item"><a class="page-link" href="?page=1">Primera</a></li>
+                                <li class="page-item"><a class="page-link" href="?page={{ eventos.previous_page_number }}">Anterior</a></li>
+                            {% endif %}
+
+                            <li class="page-item active"><a class="page-link" href="#">{{ eventos.number }}</a></li>
+
+                            {% if eventos.has_next %}
+                                <li class="page-item"><a class="page-link" href="?page={{ eventos.next_page_number }}">Siguiente</a></li>
+                                <li class="page-item"><a class="page-link" href="?page={{ eventos.paginator.num_pages }}">Última</a></li>
+                            {% endif %}
+                        </ul>
+                    </nav>
+
                 </div>
             </div>
         </div>

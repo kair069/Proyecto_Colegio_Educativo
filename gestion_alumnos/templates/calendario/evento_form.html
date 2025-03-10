@@ -2,12 +2,67 @@
 
 {% block content %}
 <div class="container mt-4">
-    <h2>{{ accion }}</h2>
-    <form method="post">
-        {% csrf_token %}
-        {{ form.as_p }}
-        <button type="submit" class="btn btn-success">Guardar</button>
-        <a href="{% url 'calendario' %}" class="btn btn-secondary">Cancelar</a>
-    </form>
+    <h2 class="text-center">📅 Agregar Evento</h2>
+
+    <div class="card">
+        <div class="card-body">
+            <!-- Mensaje de éxito -->
+            {% if messages %}
+                <div id="mensaje-exito" class="alert alert-success">
+                    {% for message in messages %}
+                        {{ message }}
+                    {% endfor %}
+                </div>
+            {% endif %}
+            
+            <form id="evento-form" method="post">
+                {% csrf_token %}
+                
+                <div class="mb-3">
+                    <label class="form-label">Título del Evento</label>
+                    <input type="text" id="titulo" name="titulo" class="form-control" placeholder="Ejemplo: Examen Final">
+                </div>
+                
+                <div class="mb-3">
+                    <label class="form-label">Fecha de Inicio</label>
+                    {{ form.fecha_inicio }}
+                </div>
+                
+                <div class="mb-3">
+                    <label class="form-label">Fecha de Fin</label>
+                    {{ form.fecha_fin }}
+                </div>
+                
+                <div class="mb-3">
+                    <label class="form-label">Tipo de Evento</label>
+                    {{ form.tipo_evento }}
+                </div>
+                
+                <button type="submit" class="btn btn-primary w-100">➕ Guardar Evento</button>
+                <a href="{% url 'calendario' %}" class="btn btn-secondary w-100 mt-2">🔙 Regresar al Calendario</a>
+            </form>
+        </div>
+    </div>
 </div>
+
+<!-- jQuery para autocompletado -->
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<link rel="stylesheet" href="https://code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">
+<script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
+
+<script>
+    $(document).ready(function () {
+        // Autocompletar el campo de título
+        $("#titulo").autocomplete({
+            source: "{% url 'autocompletar_evento' %}",
+            minLength: 2
+        });
+
+        // Ocultar mensaje de éxito después de 3 segundos
+        setTimeout(function () {
+            $("#mensaje-exito").fadeOut();
+        }, 3000);
+    });
+</script>
+
 {% endblock %}

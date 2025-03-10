@@ -1,14 +1,84 @@
 {% extends "mi_app/base.html" %}
+{% load static %}
 
 {% block content %}
 <div class="container mt-4">
-    <h2 class="mb-3">{% if object %}Editar{% else %}Agregar{% endif %} Unidad</h2>
-    <form method="post" class="shadow p-4 bg-light rounded">
-        {% csrf_token %}
-        {{ form.media }}  <!-- Para CKEditor -->
-        {{ form.as_p }}
-        <button type="submit" class="btn btn-primary">Guardar</button>
-        <a href="{% url 'unidad_list' %}" class="btn btn-secondary">Cancelar</a>
-    </form>
+    <h2 class="mb-3">{% if object %}✏️ Editar{% else %}➕ Agregar{% endif %} Unidad</h2>
+    
+    <div class="card shadow-sm p-4 bg-light">
+        <form method="post" enctype="multipart/form-data" class="needs-validation" novalidate>
+            {% csrf_token %}
+            {{ form.media }}  <!-- Para CKEditor -->
+
+            <!-- 📌 Nombre de la Unidad -->
+            <div class="mb-3">
+                <label for="id_nombre" class="form-label">📌 Nombre de la Unidad</label>
+                {{ form.nombre }}
+                <div class="invalid-feedback">Este campo es obligatorio.</div>
+            </div>
+
+            <!-- 📝 Descripción -->
+            <div class="mb-3">
+                <label for="id_descripcion" class="form-label">📝 Descripción</label>
+                {{ form.descripcion }}
+                <div class="form-text">Puedes usar formato enriquecido.</div>
+            </div>
+
+            <!-- 📚 Curso -->
+            <div class="mb-3">
+                <label for="id_curso" class="form-label">📚 Curso</label>
+                {{ form.curso }}
+                <div class="invalid-feedback">Selecciona un curso válido.</div>
+            </div>
+
+            <!-- 🔢 Número de Unidad -->
+            <div class="mb-3">
+                <label for="id_numero" class="form-label">🔢 Número de Unidad</label>
+                {{ form.numero }}
+                <div class="invalid-feedback">Ingresa un número válido.</div>
+            </div>
+
+            <!-- 📄 Archivo PDF (Opcional) -->
+            <div class="mb-3">
+                <label for="id_material_pdf" class="form-label">📄 Archivo PDF (Opcional)</label>
+                {{ form.material_pdf }}
+                {% if object.material_pdf %}
+                    <p class="mt-2">📂 <a href="{{ object.material_pdf.url }}" target="_blank">Ver PDF actual</a></p>
+                {% endif %}
+                <div class="form-text">Puedes subir un archivo PDF con material de apoyo.</div>
+            </div>
+
+            <!-- 🎥 Video URL (Opcional) -->
+            <div class="mb-3">
+                <label for="id_video_url" class="form-label">🎥 Enlace de Video (Opcional)</label>
+                {{ form.video_url }}
+                <div class="form-text">Ingresa un enlace de YouTube válido.</div>
+            </div>
+
+            <!-- ⚡ Botones -->
+            <div class="d-flex justify-content-between mt-4">
+                <a href="{% url 'unidad_list' %}" class="btn btn-secondary">⬅️ Volver</a>
+                <button type="submit" class="btn btn-primary" id="btn-submit">
+                    💾 Guardar Unidad
+                </button>
+            </div>
+        </form>
+    </div>
 </div>
+
+<!-- ✅ Validación de formulario en tiempo real -->
+<script>
+document.addEventListener("DOMContentLoaded", function() {
+    var forms = document.querySelectorAll(".needs-validation");
+    Array.prototype.slice.call(forms).forEach(function(form) {
+        form.addEventListener("submit", function(event) {
+            if (!form.checkValidity()) {
+                event.preventDefault();
+                event.stopPropagation();
+            }
+            form.classList.add("was-validated");
+        }, false);
+    });
+});
+</script>
 {% endblock %}

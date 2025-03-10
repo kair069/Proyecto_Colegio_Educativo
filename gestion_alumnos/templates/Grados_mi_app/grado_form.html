@@ -1,52 +1,86 @@
 {% extends 'mi_app/base.html' %}
 
 {% block content %}
-<div class="container">
-    <h2 class="mb-4">{% if form.instance.pk %}Editar Grado{% else %}Nuevo Grado{% endif %}</h2>
+<div class="container mt-5">
+    <div class="card shadow-lg border-0 rounded-3">
+        <div class="card-body">
+            <h2 class="fw-bold text-primary text-center mb-4">
+                {% if form.instance.pk %}Editar Grado{% else %}Nuevo Grado{% endif %}
+            </h2>
 
-    {% if form.errors %}
-        <div class="alert alert-danger">
-            <strong>Hubo un error en el formulario:</strong>
-            <ul>
-                {% for field in form %}
-                    {% for error in field.errors %}
-                        <li>{{ error }}</li>
-                    {% endfor %}
-                {% endfor %}
-            </ul>
+            <!-- Manejo de errores -->
+            {% if form.errors %}
+                <div class="alert alert-danger">
+                    <strong>Hubo un error en el formulario:</strong>
+                    <ul>
+                        {% for field in form %}
+                            {% for error in field.errors %}
+                                <li>{{ error }}</li>
+                            {% endfor %}
+                        {% endfor %}
+                    </ul>
+                </div>
+            {% endif %}
+
+            <!-- Formulario -->
+            <form method="post" enctype="multipart/form-data">
+                {% csrf_token %}
+
+                <div class="mb-3">
+                    {{ form.nivel.label_tag }}
+                    {{ form.nivel }}
+                    {% if form.nivel.errors %}
+                        <div class="text-danger small">
+                            {{ form.nivel.errors|first }}
+                        </div>
+                    {% endif %}
+                </div>
+
+                <div class="mb-3">
+                    {{ form.nombre.label_tag }}
+                    {{ form.nombre }}
+                    {% if form.nombre.errors %}
+                        <div class="text-danger small">
+                            {{ form.nombre.errors|first }}
+                        </div>
+                    {% endif %}
+                </div>
+
+                <div class="mb-3">
+                    {{ form.descripcion.label_tag }}
+                    {{ form.descripcion }}
+                    {% if form.descripcion.errors %}
+                        <div class="text-danger small">
+                            {{ form.descripcion.errors|first }}
+                        </div>
+                    {% endif %}
+                </div>
+
+                <div class="mb-3">
+                    {{ form.imagen.label_tag }}
+                    {{ form.imagen }}
+                    {% if form.imagen.errors %}
+                        <div class="text-danger small">
+                            {{ form.imagen.errors|first }}
+                        </div>
+                    {% endif %}
+                </div>
+
+                <!-- Botones -->
+                <div class="d-flex justify-content-center mt-4">
+                    <button type="submit" class="btn btn-success me-2">
+                        <i class="fas fa-save"></i> Guardar
+                    </button>
+                    <a href="{% url 'grado_list' %}" class="btn btn-outline-secondary">
+                        <i class="fas fa-times"></i> Cancelar
+                    </a>
+                </div>
+            </form>
         </div>
-    {% endif %}
-
-    <form method="post">
-        {% csrf_token %}
-        
-        <!-- Campo nivel -->
-        <div class="mb-3">
-            {{ form.nivel.label_tag }}
-            {{ form.nivel }}
-        </div>
-
-        <!-- Campo nombre -->
-        <div class="mb-3">
-            {{ form.nombre.label_tag }}
-            {{ form.nombre }}
-        </div>
-
-        <!-- Campo descripcion -->
-        <div class="mb-3">
-            {{ form.descripcion.label_tag }}
-            {{ form.descripcion }}
-        </div>
-
-        <!-- Campo imagen -->
-        <div class="mb-3">
-            {{ form.imagen.label_tag }}
-            {{ form.imagen }}
-        </div>
-
-        <!-- Botones -->
-        <button type="submit" class="btn btn-success">Guardar</button>
-        <a href="{% url 'grado_list' %}" class="btn btn-secondary">Cancelar</a>
-    </form>
+    </div>
 </div>
+
+<!-- Carga de FontAwesome -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/js/all.min.js"></script>
+
 {% endblock %}
