@@ -384,10 +384,38 @@ from .models import Alumno, AlumnoDetalle
 from .forms import AlumnoForm, AlumnoDetalleForm
 
 # 📋 Listar alumnos (CBV)
+from django.core.paginator import Paginator
+from django.db.models import Q
+from django.views.generic import ListView
+from .models import Alumno
+
 class AlumnoListView(ListView):
     model = Alumno
     template_name = "alumno/alumno_list.html"
     context_object_name = "alumnos"
+    paginate_by = 10  # Número de alumnos por página
+
+    def get_queryset(self):
+        queryset = Alumno.objects.all()
+
+        # Capturamos los parámetros de búsqueda
+        query = self.request.GET.get("q", "").strip()
+        seccion = self.request.GET.get("seccion", "")
+
+        # Filtro de búsqueda por nombre, apellido o DNI
+        if query:
+            queryset = queryset.filter(
+                Q(nombre__icontains=query) | 
+                Q(apellido__icontains=query) | 
+                Q(dni__icontains=query)
+            )
+
+        # Filtro por sección
+        if seccion:
+            queryset = queryset.filter(seccion_id=seccion)
+
+        return queryset
+
 
 # 🆕 Crear un alumno (CBV)
 class AlumnoCreateView(CreateView):

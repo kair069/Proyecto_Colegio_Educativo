@@ -3,8 +3,23 @@
 {% block content %}
 <div class="container mt-4">
     <h2 class="mb-3">📋 Listado de Alumnos</h2>
-    
-    <a href="{% url 'alumno_create' %}" class="btn btn-primary mb-3">➕ Agregar Alumno</a>
+
+    <!-- Formulario de búsqueda y filtrado -->
+    <form method="GET" class="mb-3 d-flex gap-2">
+        <input type="text" name="q" class="form-control" placeholder="🔍 Buscar por nombre, apellido o DNI" value="{{ request.GET.q }}">
+        <select name="seccion" class="form-control">
+            <option value="">Todas las secciones</option>
+            {% for sec in secciones %}
+            <option value="{{ sec.id }}" {% if request.GET.seccion == sec.id|stringformat:"s" %}selected{% endif %}>
+                {{ sec.nombre }}
+            </option>
+            {% endfor %}
+        </select>
+        <button type="submit" class="btn btn-primary">🔍 Buscar</button>
+        <a href="{% url 'alumno_list' %}" class="btn btn-secondary">🔄 Reset</a>
+    </form>
+
+    <a href="{% url 'alumno_create' %}" class="btn btn-success mb-3">➕ Agregar Alumno</a>
 
     <table class="table table-bordered table-hover">
         <thead class="table-dark text-center">
@@ -24,7 +39,7 @@
                 <td>{{ alumno.nombre }}</td>
                 <td>{{ alumno.apellido }}</td>
                 <td>{{ alumno.dni }}</td>
-                <td>{{ alumno.seccion.nombre }}</td>
+                <td>{{ alumno.seccion }}</td>
                 <td class="text-center">
                     <a href="{% url 'ver_detalle_alumno' alumno.id %}" class="btn btn-info btn-sm">👀 Ver</a>
                     <a href="{% url 'alumno_update' alumno.id %}" class="btn btn-warning btn-sm">✏️ Editar</a>
@@ -39,5 +54,32 @@
             {% endfor %}
         </tbody>
     </table>
+
+    <!-- Paginación -->
+    <nav>
+        <ul class="pagination justify-content-center">
+            {% if page_obj.has_previous %}
+            <li class="page-item">
+                <a class="page-link" href="?page=1{% if request.GET.q %}&q={{ request.GET.q }}{% endif %}{% if request.GET.seccion %}&seccion={{ request.GET.seccion }}{% endif %}">⏪ Primera</a>
+            </li>
+            <li class="page-item">
+                <a class="page-link" href="?page={{ page_obj.previous_page_number }}{% if request.GET.q %}&q={{ request.GET.q }}{% endif %}{% if request.GET.seccion %}&seccion={{ request.GET.seccion }}{% endif %}">◀ Anterior</a>
+            </li>
+            {% endif %}
+
+            <li class="page-item disabled">
+                <span class="page-link">Página {{ page_obj.number }} de {{ page_obj.paginator.num_pages }}</span>
+            </li>
+
+            {% if page_obj.has_next %}
+            <li class="page-item">
+                <a class="page-link" href="?page={{ page_obj.next_page_number }}{% if request.GET.q %}&q={{ request.GET.q }}{% endif %}{% if request.GET.seccion %}&seccion={{ request.GET.seccion }}{% endif %}">Siguiente ▶</a>
+            </li>
+            <li class="page-item">
+                <a class="page-link" href="?page={{ page_obj.paginator.num_pages }}{% if request.GET.q %}&q={{ request.GET.q }}{% endif %}{% if request.GET.seccion %}&seccion={{ request.GET.seccion }}{% endif %}">Última ⏩</a>
+            </li>
+            {% endif %}
+        </ul>
+    </nav>
 </div>
 {% endblock %}

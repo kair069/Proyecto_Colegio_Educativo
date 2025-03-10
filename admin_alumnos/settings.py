@@ -97,30 +97,34 @@ WSGI_APPLICATION = 'admin_alumnos.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/5.1/ref/settings/#databases
 
-# DATABASES = {
-#     'default': {
-#         'ENGINE': 'django.db.backends.mysql',
-#         'NAME': 'GestionAlumnos',  # Nombre de tu base de datos
-#         'USER': 'root',            # Usuario de MySQL
-#         'PASSWORD': '1234',        # Contraseña de MySQL
-#         'HOST': 'localhost',       # Dirección del servidor
-#         'PORT': '3306',            # Puerto de MySQL
-#         'OPTIONS': {
-#             'charset': 'utf8mb4',  # Permite emojis y caracteres especiales
-#         },
-#     }
-# }
-
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.postgresql',
-        'NAME': 'basededatosdocente',
-        'USER': 'root',
-        'PASSWORD': 'I8NIRv3GhriHT91t5B9joK5KrilSeO3f',
-        'HOST': 'dpg-cv6q8jt2ng1s738051j0-a.oregon-postgres.render.com',  # External Database URL (host)
-        'PORT': '5432',
+        'ENGINE': 'django.db.backends.mysql',
+        'NAME': 'GestionAlumnos',  # Nombre de tu base de datos
+        'USER': 'root',            # Usuario de MySQL
+        'PASSWORD': '1234',        # Contraseña de MySQL
+        'HOST': 'localhost',       # Dirección del servidor
+        'PORT': '3306',            # Puerto de MySQL
+        'OPTIONS': {
+            'charset': 'utf8mb4',  # Permite emojis y caracteres especiales
+        },
     }
 }
+
+#agrege optionse se puede kitar
+# DATABASES = {
+#     'default': {
+#         'ENGINE': 'django.db.backends.postgresql',
+#         'NAME': 'basededatosdocente',
+#         'USER': 'root',
+#         'PASSWORD': 'I8NIRv3GhriHT91t5B9joK5KrilSeO3f',
+#         'HOST': 'dpg-cv6q8jt2ng1s738051j0-a.oregon-postgres.render.com',  # External Database URL (host)
+#         'PORT': '5432',
+#         'OPTIONS': {
+#             'charset': 'utf8mb4',  # Permite emojis y caracteres especiales
+#         },        
+#     }
+# }
 
 
 # Password validation
@@ -209,3 +213,13 @@ LOGOUT_REDIRECT_URL = '/salida/'  # Redirige a la página de salida después del
 #basededatosdocente
 #root
 #free
+
+# DO $$ 
+# DECLARE 
+#     r RECORD;
+# BEGIN 
+#     FOR r IN (SELECT tablename FROM pg_tables WHERE schemaname = 'public') 
+#     LOOP 
+#         EXECUTE 'DROP TABLE IF EXISTS ' || quote_ident(r.tablename) || ' CASCADE';
+#     END LOOP;
+# END $$;
