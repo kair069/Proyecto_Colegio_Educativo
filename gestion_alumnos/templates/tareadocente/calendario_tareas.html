@@ -1,0 +1,75 @@
+{% extends 'mi_app/base.html' %}
+
+{% block content %}
+<div class="container mt-5">
+    <h1>Calendario de Tareas Docentes</h1>
+
+    <!-- Formulario para agregar una nueva tarea -->
+    <div class="mb-4">
+        <h3>Agregar Tarea Docente</h3>
+        <form method="POST" class="mb-4">
+            {% csrf_token %}
+            {{ form.as_p }}
+
+            <!-- Mejorar el ingreso de fecha utilizando date picker -->
+            <div class="form-group">
+                <label for="id_fecha_entrega">Fecha de Entrega</label>
+                <input type="date" name="fecha_entrega" id="id_fecha_entrega" class="form-control" required>
+            </div>
+
+            <button type="submit" class="btn btn-primary">Agregar Tarea</button>
+        </form>
+    </div>
+
+    <!-- Lista de tareas con opción de eliminar -->
+    <h3>Tareas Asignadas</h3>
+    <ul class="list-group mb-4">
+        {% for tarea in tareas %}
+        <li class="list-group-item">
+            <strong>{{ tarea.descripcion }}</strong><br>
+            Fecha de Entrega: {{ tarea.fecha_entrega }}<br>
+            Docente: {{ tarea.docente.nombre }} {{ tarea.docente.apellido }}
+            <form method="POST" action="{% url 'calendario_tareas' %}" style="display:inline;">
+                {% csrf_token %}
+                <input type="hidden" name="id" value="{{ tarea.id }}">
+                <button type="submit" name="_method" value="DELETE" class="btn btn-danger btn-sm float-end">Eliminar</button>
+            </form>
+        </li>
+        {% endfor %}
+    </ul>
+
+    <!-- Calendario -->
+    <div id="calendar"></div>
+
+    <script>
+        // Carga el calendario FullCalendar
+        document.addEventListener('DOMContentLoaded', function() {
+            var calendarEl = document.getElementById('calendar');
+            var calendar = new FullCalendar.Calendar(calendarEl, {
+                initialView: 'dayGridMonth',
+                events: [
+                    {% for evento in eventos %}
+                    {
+                        title: '{{ evento.title }}',
+                        start: '{{ evento.start }}',
+                        end: '{{ evento.end }}',
+                        description: '{{ evento.description }}',
+                        docente: '{{ evento.docente }}'
+                    },
+                    {% endfor %}
+                ],
+                eventClick: function(info) {
+                    // Muestra detalles al hacer click en un evento
+                    alert('Tarea: ' + info.event.title + '\nDocente: ' + info.event.extendedProps.docente + '\nDescripción: ' + info.event.extendedProps.description);
+                }
+            });
+            calendar.render();
+        });
+    </script>
+</div>
+{% endblock %}
+
+
+
+
+

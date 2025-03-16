@@ -75,6 +75,9 @@ from .views import UserListView, UserUpdateView, UserDeleteView
 from .views import calificar_trabajo
 from django.urls import path
 from .views import asignar_usuarios_a_grupo
+from .views import registrar_asistencia, listar_asistencia_docente
+from .views import DocenteListView, DocenteDetalleView, agregar_detalle_docente, actualizar_detalle_docente, eliminar_detalle_docente
+
 
 urlpatterns = [
     path('niveles/', NivelListView.as_view(), name='nivel_list'),
@@ -246,6 +249,32 @@ urlpatterns = [
     path('alumnos/detalles/crear/<int:alumno_id>/', views.crear_detalle_alumno, name='crear_detalle_alumno'),
     path('alumnos/detalles/editar/<int:alumno_id>/', views.editar_detalle_alumno, name='editar_detalle_alumno'),
     path('alumnos/detalles/eliminar/<int:alumno_id>/', views.eliminar_detalle_alumno, name='eliminar_detalle_alumno'),
+
+
+
+ 
+    path('registrardocente/', registrar_asistencia, name='registrar_asistencia'),
+    path('listardocente/', listar_asistencia_docente, name='listar_asistencia_docente'),
+
+
+
+
+   
+  
+    path('docente/<int:pk>/', DocenteDetalleView.as_view(), name='detalle_docente'),
+    path('docente/<int:docente_id>/agregar_detalle/', agregar_detalle_docente, name='agregar_detalle_docente'),
+    path('docente/<int:docente_id>/actualizar_detalle/', actualizar_detalle_docente, name='actualizar_detalle_docente'),
+    path('docente/<int:docente_id>/eliminar_detalle/', eliminar_detalle_docente, name='eliminar_detalle_docente'),
+    
+
+    path('tareas-docentes/', views.tarea_docente_list, name='tarea_docente_list'),
+    path('tareas-docentes/nueva/', views.tarea_docente_create, name='tarea_docente_create'),
+    path('tareas-docentes/<int:pk>/editar/', views.tarea_docente_edit, name='tarea_docente_edit'),
+    path('tareas-docentes/<int:pk>/eliminar/', views.tarea_docente_delete, name='tarea_docente_delete'),
+    path('calendario_tareas/', views.calendario_tareas, name='calendario_tareas'),
+
+
+
 
 ]
 

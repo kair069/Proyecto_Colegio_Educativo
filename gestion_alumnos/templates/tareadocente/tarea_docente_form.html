@@ -1,0 +1,14 @@
+{% extends 'mi_app/base.html' %}
+
+{% block content %}
+<div class="container mt-5">
+    <h1>{% if form.instance.pk %}Editar Tarea Docente{% else %}Nueva Tarea Docente{% endif %}</h1>
+    <form method="POST">
+        {% csrf_token %}
+        {{ form.as_p }}
+        <button type="submit" class="btn btn-success mt-3">
+            {% if form.instance.pk %}Actualizar Tarea{% else %}Asignar Tarea{% endif %}
+        </button>
+    </form>
+</div>
+{% endblock %}

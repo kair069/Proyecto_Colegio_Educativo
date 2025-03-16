@@ -7,14 +7,15 @@
     <!-- Formulario de búsqueda y filtrado -->
     <form method="GET" class="mb-3 d-flex gap-2">
         <input type="text" name="q" class="form-control" placeholder="🔍 Buscar por nombre, apellido o DNI" value="{{ request.GET.q }}">
-        <select name="seccion" class="form-control">
-            <option value="">Todas las secciones</option>
-            {% for sec in secciones %}
-            <option value="{{ sec.id }}" {% if request.GET.seccion == sec.id|stringformat:"s" %}selected{% endif %}>
-                {{ sec.nombre }}
-            </option>
-            {% endfor %}
-        </select>
+       <select name="seccion" class="form-select">
+    <option value="">Todas las secciones</option>
+    {% for sec in secciones %}
+    <option value="{{ sec.id }}" {% if request.GET.seccion|stringformat:"s" == sec.id|stringformat:"s" %}selected{% endif %}>
+        {{ sec }}
+    </option>
+    {% endfor %}
+</select>
+
         <button type="submit" class="btn btn-primary">🔍 Buscar</button>
         <a href="{% url 'alumno_list' %}" class="btn btn-secondary">🔄 Reset</a>
     </form>
@@ -25,6 +26,7 @@
         <thead class="table-dark text-center">
             <tr>
                 <th>ID</th>
+                <th>Usuario</th>
                 <th>Nombre</th>
                 <th>Apellido</th>
                 <th>DNI</th>
@@ -36,6 +38,7 @@
             {% for alumno in alumnos %}
             <tr>
                 <td>{{ alumno.id }}</td>
+                <td>{{ alumno.usuario.email }}</td>  <!-- Se muestra el email del usuario -->
                 <td>{{ alumno.nombre }}</td>
                 <td>{{ alumno.apellido }}</td>
                 <td>{{ alumno.dni }}</td>
@@ -49,21 +52,22 @@
             </tr>
             {% empty %}
             <tr>
-                <td colspan="6" class="text-center">⚠️ No hay alumnos registrados.</td>
+                <td colspan="7" class="text-center">⚠️ No hay alumnos registrados.</td>
             </tr>
             {% endfor %}
         </tbody>
     </table>
 
     <!-- Paginación -->
+    {% if is_paginated %}
     <nav>
         <ul class="pagination justify-content-center">
             {% if page_obj.has_previous %}
             <li class="page-item">
-                <a class="page-link" href="?page=1{% if request.GET.q %}&q={{ request.GET.q }}{% endif %}{% if request.GET.seccion %}&seccion={{ request.GET.seccion }}{% endif %}">⏪ Primera</a>
+                <a class="page-link" href="?page=1{{ request.GET.urlencode }}">⏪ Primera</a>
             </li>
             <li class="page-item">
-                <a class="page-link" href="?page={{ page_obj.previous_page_number }}{% if request.GET.q %}&q={{ request.GET.q }}{% endif %}{% if request.GET.seccion %}&seccion={{ request.GET.seccion }}{% endif %}">◀ Anterior</a>
+                <a class="page-link" href="?page={{ page_obj.previous_page_number }}{{ request.GET.urlencode }}">◀ Anterior</a>
             </li>
             {% endif %}
 
@@ -73,13 +77,14 @@
 
             {% if page_obj.has_next %}
             <li class="page-item">
-                <a class="page-link" href="?page={{ page_obj.next_page_number }}{% if request.GET.q %}&q={{ request.GET.q }}{% endif %}{% if request.GET.seccion %}&seccion={{ request.GET.seccion }}{% endif %}">Siguiente ▶</a>
+                <a class="page-link" href="?page={{ page_obj.next_page_number }}{{ request.GET.urlencode }}">Siguiente ▶</a>
             </li>
             <li class="page-item">
-                <a class="page-link" href="?page={{ page_obj.paginator.num_pages }}{% if request.GET.q %}&q={{ request.GET.q }}{% endif %}{% if request.GET.seccion %}&seccion={{ request.GET.seccion }}{% endif %}">Última ⏩</a>
+                <a class="page-link" href="?page={{ page_obj.paginator.num_pages }}{{ request.GET.urlencode }}">Última ⏩</a>
             </li>
             {% endif %}
         </ul>
     </nav>
+    {% endif %}
 </div>
 {% endblock %}

@@ -126,18 +126,35 @@ class PeriodoForm(forms.ModelForm):
 
 ####################################################################################################
 from django import forms
+from django.contrib.auth.models import User
+from .models import Alumno
+
+from django import forms
 from .models import Alumno
 
 class AlumnoForm(forms.ModelForm):
     class Meta:
         model = Alumno
-        fields = ['nombre', 'apellido', 'dni', 'seccion']
+        fields = ['usuario', 'nombre', 'apellido', 'dni', 'seccion']
         widgets = {
+            'usuario': forms.Select(attrs={'class': 'form-select'}),  # Campo usuario visible
             'nombre': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Ingrese el nombre'}),
             'apellido': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Ingrese el apellido'}),
             'dni': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Ingrese el DNI', 'maxlength': '8'}),
             'seccion': forms.Select(attrs={'class': 'form-select'}),
         }
+
+    def __init__(self, *args, **kwargs):
+        user = kwargs.pop('user', None)  # Capturamos el usuario
+        super().__init__(*args, **kwargs)
+
+        if user and not user.is_superuser:
+            # Ocultamos el campo usuario en lugar de eliminarlo
+            self.fields['usuario'].widget = forms.HiddenInput()
+            self.initial['usuario'] = user  # Asignamos automáticamente el usuario actual
+
+
+
 
 from django import forms
 from .models import AlumnoDetalle
@@ -247,6 +264,86 @@ class DocenteForm(forms.ModelForm):
         super(DocenteForm, self).__init__(*args, **kwargs)
         # Asignamos dinámicamente el queryset para evitar errores de base de datos
         self.fields['usuario'].queryset = User.objects.filter(groups__name='Profesor')
+
+
+from django import forms
+from .models import Docente, DocenteDetalle
+
+
+class DocenteDetalleForm(forms.ModelForm):
+    class Meta:
+        model = DocenteDetalle
+        fields = [
+            # Información personal
+            'fecha_nacimiento', 'direccion', 'telefono', 'email_institucional', 'imagen',
+
+            # Documentos
+            'foto_dni', 'curriculum_vitae', 'contrato',
+
+            # Información académica y laboral
+            'titulo_profesional', 'especializacion', 'institucion_egreso', 'anios_experiencia', 'cursos_asignados',
+
+            # Información laboral
+            'tipo_contrato', 'sueldo', 'fecha_ingreso', 'fecha_fin_contrato',
+
+            # Datos institucionales
+            'codigo_docente', 'estado_docente',
+
+            # Contacto de emergencia
+            'contacto_emergencia', 'telefono_contacto_emergencia', 'parentesco_contacto',
+
+            # Datos médicos
+            'tipo_sangre', 'alergias', 'enfermedades', 'seguro_medico',
+
+            # Información adicional
+            'nacionalidad', 'idiomas',
+        ]
+        widgets = {
+            'fecha_nacimiento': forms.DateInput(attrs={'class': 'form-control', 'type': 'date'}),
+            'direccion': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Dirección'}),
+            'telefono': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Teléfono'}),
+            'email_institucional': forms.EmailInput(attrs={'class': 'form-control', 'placeholder': 'Correo institucional'}),
+            'imagen': forms.FileInput(attrs={'class': 'form-control'}),
+
+            # Documentos
+            'foto_dni': forms.FileInput(attrs={'class': 'form-control'}),
+            'curriculum_vitae': forms.FileInput(attrs={'class': 'form-control'}),
+            'contrato': forms.FileInput(attrs={'class': 'form-control'}),
+
+            # Académico
+            'titulo_profesional': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Título Profesional'}),
+            'especializacion': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Especialización'}),
+            'institucion_egreso': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Institución de egreso'}),
+            'anios_experiencia': forms.NumberInput(attrs={'class': 'form-control', 'placeholder': 'Años de experiencia'}),
+            'cursos_asignados': forms.SelectMultiple(attrs={'class': 'form-control'}),
+
+            # Laboral
+            'tipo_contrato': forms.Select(attrs={'class': 'form-control'}),
+            'sueldo': forms.NumberInput(attrs={'class': 'form-control', 'placeholder': 'Sueldo'}),
+            'fecha_ingreso': forms.DateInput(attrs={'class': 'form-control', 'type': 'date'}),
+            'fecha_fin_contrato': forms.DateInput(attrs={'class': 'form-control', 'type': 'date'}),
+
+            # Institucional
+            'codigo_docente': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Código'}),
+            'estado_docente': forms.Select(attrs={'class': 'form-control'}),
+
+            # Contacto de emergencia
+            'contacto_emergencia': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Nombre contacto'}),
+            'telefono_contacto_emergencia': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Teléfono'}),
+            'parentesco_contacto': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Parentesco'}),
+
+            # Datos médicos
+            'tipo_sangre': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Tipo de sangre'}),
+            'alergias': forms.Textarea(attrs={'class': 'form-control', 'rows': 2, 'placeholder': 'Alergias'}),
+            'enfermedades': forms.Textarea(attrs={'class': 'form-control', 'rows': 2, 'placeholder': 'Enfermedades'}),
+            'seguro_medico': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Seguro médico'}),
+
+            # Información adicional
+            'nacionalidad': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Nacionalidad'}),
+            'idiomas': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Idiomas'}),
+        }
+
+
 
 
 ####################################################################################################
@@ -500,6 +597,7 @@ from ckeditor.widgets import CKEditorWidget
 from .models import Tema
 
 class TemaForm(forms.ModelForm):
+
     class Meta:
         model = Tema
         fields = ["unidad", "nombre", "descripcion", "numero"]
@@ -666,3 +764,59 @@ class UserForm(forms.ModelForm):
             'last_name': forms.TextInput(attrs={'class': 'form-control'}),
             'is_active': forms.CheckboxInput(attrs={'class': 'form-check-input'}),
         }        
+
+####################################################################################################ASISTENCIA DOCENTE
+from django import forms
+from .models import AsistenciaDocente
+from django.utils.timezone import now
+
+from django import forms
+from django.utils.timezone import now
+from .models import AsistenciaDocente
+
+from django import forms
+from .models import AsistenciaDocente
+
+from django import forms
+from .models import AsistenciaDocente
+
+from django import forms
+from .models import AsistenciaDocente
+
+class AsistenciaDocenteForm(forms.ModelForm):
+    class Meta:
+        model = AsistenciaDocente
+        fields = ['hora_ingreso', 'hora_salida']
+        widgets = {
+            'hora_ingreso': forms.TimeInput(attrs={'class': 'form-control', 'type': 'time'}),
+            'hora_salida': forms.TimeInput(attrs={'class': 'form-control', 'type': 'time'}),
+        }
+
+    def clean_hora_salida(self):
+        """Validar que la hora de salida sea posterior a la de ingreso."""
+        hora_ingreso = self.cleaned_data.get("hora_ingreso")
+        hora_salida = self.cleaned_data.get("hora_salida")
+
+        if hora_salida and not hora_ingreso:
+            raise forms.ValidationError("No puedes registrar la salida sin haber marcado el ingreso.")
+
+        if hora_ingreso and hora_salida and hora_salida <= hora_ingreso:
+            raise forms.ValidationError("La hora de salida debe ser posterior a la de ingreso.")
+
+        return hora_salida
+
+
+####################################################################################################
+from django import forms
+from .models import TareaDocente
+
+class TareaDocenteForm(forms.ModelForm):
+    class Meta:
+        model = TareaDocente
+        fields = ['docente', 'descripcion', 'fecha_entrega']
+
+
+from django import forms
+from .models import TareaDocente
+
+

@@ -8,147 +8,221 @@
         <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
         <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
         <style>
-            body {
-                background-color: #dfe6e9;
-                font-family: "Times New Roman", Times, serif;
-            }
-            .navbar {
-                background-color: rgb(17, 169, 224) !important;
-            }
-            .navbar:hover {
-                background-color: rgb(31, 146, 213) !important;
-            }
-            .container {
-                opacity: 0;
-                transform: translateY(-10px);
-                animation: fadeInMove 0.6s forwards;
-            }
-            @keyframes fadeInMove {
-                    from { opacity: 0; transform: translateY(-20px); }
-                    to { opacity: 1; transform: translateY(0); }
-                }
-            /* Estilos flotantes */
-                .floating-card {
-                    position: fixed;
-                    background: linear-gradient(135deg, #74b9ff, #0984e3);
-                    color: white;
-                    border-radius: 15px;
-                    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.3);
-                    padding: 15px;
-                    text-align: center;
-                    user-select: none;
-                    cursor: grab;
-                    animation: fadeInMove 0.8s forwards;
-                }
-            @keyframes fadeInMove {
-                from { opacity: 0; transform: translateY(-20px); }
-                to { opacity: 1; transform: translateY(0); }
-            }
-            /* Reloj */
-            #clock-card {
-                top: 700px;
-                left:1450px;
-                width: 230px;
-            }
-            #clock-title { font-size: 1.2rem; font-weight: bold; }
-            #fecha { font-size: 0.9rem; opacity: 0.8; }
-            /* Reproductor MP3 */
+@import url('https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap');
+
+body {
+    background-color: #f4f6f9;
+    font-family: "Roboto", "Segoe UI", sans-serif;
+    color: #333;
+    line-height: 1.6;
+    margin: 0;
+    padding: 0;
+}
+
+h1, h2, h3, h4, h5, h6 {
+    font-weight: 500;
+    color: #212529;
+}
+
+p {
+    font-weight: 400;
+}
+
+a {
+    text-decoration: none;
+    color: #007bff;
+}
+
+a:hover {
+    color: #0056b3;
+}
+
+
+/* Navbar con animación */
+.navbar {
+    background: linear-gradient(90deg, #1e3c72, #2a5298);
+    transition: background 0.5s ease-in-out, box-shadow 0.3s ease-in-out;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    font-weight: 600;
+}
+
+.navbar:hover {
+    background: linear-gradient(90deg, #2a5298, #1e3c72);
+    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.3);
+}
+
+/* Animación de entrada para la página */
+.container {
+    opacity: 0;
+    transform: translateY(-10px);
+    animation: fadeInMove 0.6s forwards;
+}
+
+@keyframes fadeInMove {
+    from { opacity: 0; transform: translateY(-20px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+/* Tarjetas flotantes */
+.floating-card {
+    position: fixed;
+    background: linear-gradient(135deg, #3b5998, #192f6a);
+    color: white;
+    border-radius: 12px;
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.25);
+    padding: 15px;
+    text-align: center;
+    user-select: none;
+    cursor: grab;
+    transition: transform 0.2s ease-in-out, box-shadow 0.3s ease-in-out;
+    animation: fadeInMove 0.8s forwards;
+    font-weight: 400;
+}
+
+.floating-card:hover {
+    transform: scale(1.05);
+    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.3);
+}
+
+/* Estilos para el reloj */
+#clock-card {
+    top: 700px;
+    left: 1450px;
+    width: 230px;
+}
+
+#clock-title {
+    font-size: 1.2rem;
+    font-weight: bold;
+}
+
+#fecha {
+    font-size: 0.9rem;
+    opacity: 0.8;
+}
+
+
            
         </style>
     </head>
     <body>
 
-        <!-- Barra de navegación -->
-<nav class="navbar navbar-expand-lg navbar-dark shadow-sm">
+<nav class="navbar navbar-expand-lg navbar-dark bg-primary shadow-sm">
     <div class="container-fluid">
         <a class="navbar-brand fw-bold" href="{% url 'home' %}">🏫 Sistema Escolar</a>
         <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" 
                 aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
             <span class="navbar-toggler-icon"></span>
         </button>
-        
+
         <div class="collapse navbar-collapse" id="navbarNav">
-            <ul class="navbar-nav ms-auto">
-                <li class="nav-item"><a class="nav-link" href="{% url 'nivel_list' %}">📚 Niveles</a></li>
-                <li class="nav-item"><a class="nav-link" href="{% url 'grado_list' %}">🎓 Grados</a></li>
-                <li class="nav-item"><a class="nav-link" href="{% url 'seccion_list' %}">🏫 Secciones</a></li>
-                <li class="nav-item"><a class="nav-link" href="{% url 'periodo_list' %}">📆 Periodos</a></li>
-                <li class="nav-item"><a class="nav-link" href="{% url 'alumno_list' %}">👨‍🎓 Alumnos</a></li>
-                 <li class="nav-item"><a class="nav-link" href="{% url 'user_list' %}">👨‍🎓 Usuarios</a></li>
-                <li class="nav-item"><a class="nav-link" href="{% url 'group_list' %}">👨‍🎓 Grupos</a></li>
-                
-                
-                <!-- Dropdown Docentes -->
-                <li class="nav-item dropdown position-relative">
-                    <a class="nav-link dropdown-toggle" href="#" id="docenteDropdown" role="button" data-bs-toggle="dropdown">
-                        🏫 Gestión Docente
+            <ul class="navbar-nav ms-auto d-flex flex-wrap justify-content-around w-100">
+
+                <!-- Dropdown para Gestión Académica -->
+                <li class="nav-item dropdown">
+                    <a class="nav-link dropdown-toggle" href="#" id="academicaDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                        📚 Gestión Académica
                     </a>
-                    <ul class="dropdown-menu" aria-labelledby="docenteDropdown">
-                        <li><a class="dropdown-item" href="{% url 'docente_list' %}">👩‍🏫 Todos los Docentes</a></li>
-                        <li><a class="dropdown-item" href="{% url 'listar_horarios' %}">🕒 Horarios Docentes</a></li>
-                        <li><a class="dropdown-item" href="{% url 'ver_horarios' %}">🕒 Ver Horarios Docentes</a></li>
-                        <li><a class="dropdown-item" href="{% url 'agregar_horario_profesor' %}">🕒 Horario por docente</a></li>
+                    <ul class="dropdown-menu" aria-labelledby="academicaDropdown">
+                        <li><a class="dropdown-item" href="{% url 'nivel_list' %}">Niveles</a></li>
+                        <li><a class="dropdown-item" href="{% url 'grado_list' %}">Grados</a></li>
+                        <li><a class="dropdown-item" href="{% url 'seccion_list' %}">Secciones</a></li>
+                        <li><a class="dropdown-item" href="{% url 'periodo_list' %}">Periodos</a></li>
                     </ul>
                 </li>
 
-                <li class="nav-item"><a class="nav-link" href="{% url 'calendario' %}">📅 Calendario Académico</a></li>
-                
-                <!-- Dropdown Cursos -->
-                <li class="nav-item dropdown position-relative">
-                    <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-bs-toggle="dropdown">
-                        📖 Cursos
+                <!-- Dropdown para Gestión de Usuarios -->
+                <li class="nav-item dropdown">
+                    <a class="nav-link dropdown-toggle" href="#" id="usuariosDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                        👤 Gestión de Usuarios
                     </a>
-                    <ul class="dropdown-menu" aria-labelledby="navbarDropdown">
-                        <li><a class="dropdown-item" href="{% url 'curso_list' %}">📚 Todos los Cursos</a></li>
-                        <li><a class="dropdown-item" href="{% url 'curso_asignado_list' %}">📝 Cursos Asignados</a></li>
+                    <ul class="dropdown-menu" aria-labelledby="usuariosDropdown">
+                        <li><a class="dropdown-item" href="{% url 'alumno_list' %}">Alumnos</a></li>
+                        <li><a class="dropdown-item" href="{% url 'user_list' %}">Usuarios</a></li>
+                        <li><a class="dropdown-item" href="{% url 'group_list' %}">Grupos</a></li>
                     </ul>
                 </li>
 
-                <li class="nav-item"><a class="nav-link" href="{% url 'unidad_list' %}">📘 Unidades</a></li>
-                <li class="nav-item"><a class="nav-link" href="{% url 'tema_list' %}">📖 Temas</a></li>
-                
-                <!-- Dropdown Asistencia -->
-                <li class="nav-item dropdown position-relative">
-                    <a class="nav-link dropdown-toggle" href="#" id="asistDropdown" role="button" data-bs-toggle="dropdown">
-                        ✅ Asistencia
+               <!-- Dropdown para Gestión Docente -->
+            <li class="nav-item dropdown">
+                <a class="nav-link dropdown-toggle" href="#" id="docenteDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                    👩‍🏫 Gestión Docente
+                </a>
+                <ul class="dropdown-menu" aria-labelledby="docenteDropdown">
+                    <li><a class="dropdown-item" href="{% url 'docente_list' %}">Docentes</a></li>
+                    <li><a class="dropdown-item" href="{% url 'listar_asistencia_docente' %}">Listar Asistencia Docente</a></li>
+                    <li><a class="dropdown-item" href="{% url 'registrar_asistencia' %}">Registrar Asistencia Docente</a></li>
+                    <li><a class="dropdown-item" href="{% url 'listar_horarios' %}">Horarios</a></li>
+                    <li><a class="dropdown-item" href="{% url 'ver_horarios' %}">Ver Horarios</a></li>
+                    <li><a class="dropdown-item" href="{% url 'agregar_horario_profesor' %}">Asignar Horario</a></li>
+                    <li><a class="dropdown-item" href="{% url 'calendario_tareas' %}">Calendario de Tareas Docentes</a></li> <!-- Nueva opción -->
+                </ul>
+            </li>
+
+
+                <!-- Dropdown para Trabajo y Evaluaciones -->
+                <li class="nav-item dropdown">
+                    <a class="nav-link dropdown-toggle" href="#" id="trabajoDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                        📝 Trabajo y Evaluaciones
                     </a>
-                    <ul class="dropdown-menu" aria-labelledby="asistDropdown">
-                        <li><a class="dropdown-item" href="{% url 'seleccionar_curso_asistencia' %}">📋 Pasar Asistencia</a></li>
-                        <li><a class="dropdown-item" href="{% url 'listar_asistencias' %}">📄 Listar Asistencia</a></li>
+                    <ul class="dropdown-menu" aria-labelledby="trabajoDropdown">
+                        <li><a class="dropdown-item" href="{% url 'seleccionar_trabajo' %}">Seleccionar Trabajo a Revisar</a></li>
+                        <li><a class="dropdown-item" href="{% url 'unidad_list' %}">Unidades</a></li>
+                        <li><a class="dropdown-item" href="{% url 'tema_list' %}">Temas</a></li>
                     </ul>
                 </li>
 
-                <li class="nav-item"><a class="nav-link" href="{% url 'trabajo_list' %}">📂 Trabajos</a></li>
-                <li class="nav-item"><a class="nav-link" href="{% url 'calificacion_list' %}">📊 Calificaciones</a></li>
-                
-                <li class="nav-item">
-                    <a class="nav-link btn btn-light text-dark px-3" href="{% url 'seleccionar_trabajo' %}">
-                        📄 Seleccionar Trabajo
+                <!-- Dropdown para Asistencia -->
+                <li class="nav-item dropdown">
+                    <a class="nav-link dropdown-toggle" href="#" id="asistenciaDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                        📋 Asistencia
                     </a>
+                    <ul class="dropdown-menu" aria-labelledby="asistenciaDropdown">
+                        <li><a class="dropdown-item" href="{% url 'seleccionar_curso_asistencia' %}">Seleccionar Curso para Pasar Asistencia</a></li>
+                        <li><a class="dropdown-item" href="{% url 'listar_asistencias' %}">Listar Asistencias</a></li>
+                    </ul>
                 </li>
-                <li class="nav-item"><a class="nav-link" href="{% url 'reproductor_mp3' %}">🎵 Reproductor</a></li>
 
-             <!-- Mostrar nombre de usuario si está logueado -->
-{% if user.is_authenticated %}
-    <li class="nav-item">
-        <a class="nav-link" href="#">{{ user.username }}</a>
-    </li>
-    <li class="nav-item">
-        <form method="post" action="{% url 'logout' %}">
-            {% csrf_token %}
-            <button type="submit" class="btn btn-danger nav-link" style="border: none; background: none;">Cerrar sesión</button>
-        </form>
-    </li>
-{% else %}
-    <li class="nav-item">
-        <a class="nav-link" href="{% url 'login' %}">Iniciar sesión</a>
-    </li>
-{% endif %}
+                <!-- Dropdown para Otras opciones -->
+                <li class="nav-item dropdown">
+                    <a class="nav-link dropdown-toggle" href="#" id="otrasOpcionesDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                        📅 Otras opciones
+                    </a>
+                    <ul class="dropdown-menu" aria-labelledby="otrasOpcionesDropdown">
+                        <li><a class="dropdown-item" href="{% url 'calendario' %}">Calendario</a></li>
+                        <li><a class="dropdown-item" href="{% url 'trabajo_list' %}">Trabajos</a></li>
+                        <li><a class="dropdown-item" href="{% url 'calificacion_list' %}">Calificaciones</a></li>
+                        <li><a class="dropdown-item" href="{% url 'reproductor_mp3' %}">Reproductor</a></li>
+                    </ul>
+                </li>
 
+                <!-- Usuario autenticado -->
+                {% if user.is_authenticated %}
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" href="#" id="userDropdown" role="button" data-bs-toggle="dropdown">
+                            👤 {{ user.username }}
+                        </a>
+                        <ul class="dropdown-menu" aria-labelledby="userDropdown">
+                            <li>
+                                <form method="post" action="{% url 'logout' %}">
+                                    {% csrf_token %}
+                                    <button type="submit" class="dropdown-item text-danger">🚪 Cerrar sesión</button>
+                                </form>
+                            </li>
+                        </ul>
+                    </li>
+                {% else %}
+                    <li class="nav-item"><a class="nav-link" href="{% url 'login' %}">🔑 Iniciar sesión</a></li>
+                {% endif %}
             </ul>
         </div>
     </div>
 </nav>
+
+
+
+
+
 
 
         <!-- Mensajes Flash -->

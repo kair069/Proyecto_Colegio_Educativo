@@ -1,0 +1,31 @@
+{% extends 'mi_app/base.html' %}
+
+{% block content %}
+<div class="container mt-4">
+    <h2>Registrar Asistencia</h2>
+
+    {% if messages %}
+        {% for message in messages %}
+            <div class="alert {% if message.tags %}alert-{{ message.tags }}{% endif %}">
+                {{ message }}
+            </div>
+        {% endfor %}
+    {% endif %}
+
+    <form method="post">
+        {% csrf_token %}
+        <div class="mb-3">
+            <label for="hora_ingreso" class="form-label">Hora de Ingreso:</label>
+            {{ form.hora_ingreso }}
+        </div>
+
+        <div class="mb-3">
+            <label for="hora_salida" class="form-label">Hora de Salida:</label>
+            {{ form.hora_salida }}
+        </div>
+
+        <button type="submit" name="ingreso" class="btn btn-success">Marcar Ingreso</button>
+        <button type="submit" name="salida" class="btn btn-danger">Marcar Salida</button>
+    </form>
+</div>
+{% endblock %}

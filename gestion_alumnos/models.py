@@ -80,24 +80,126 @@ class Curso(models.Model):
         return f"{self.nombre} - {self.grado.nombre} ({self.grado.nivel.nombre})"
 
 
+from django.db import models
+from django.contrib.auth.models import User
+from django.utils.timezone import now
+
 class Docente(models.Model):
-    #cambio
-    usuario = models.OneToOneField(User, on_delete=models.CASCADE)  # Ahora cada docente tiene un usuario
+    usuario = models.OneToOneField(User, on_delete=models.CASCADE)  # Relación uno a uno con User
     nombre = models.CharField(max_length=100)
     apellido = models.CharField(max_length=100)
 
     def __str__(self):
         return f"{self.nombre} {self.apellido} ({self.usuario.username})"
+    
+
+class DocenteDetalle(models.Model):
+    docente = models.OneToOneField(Docente, on_delete=models.CASCADE, related_name="detalles")
+
+    # 📅 Información personal
+    fecha_nacimiento = models.DateField(null=True, blank=True)
+    direccion = models.CharField(max_length=255, blank=True, null=True)
+    telefono = models.CharField(max_length=15, blank=True, null=True)
+    email_institucional = models.EmailField(unique=True, blank=True, null=True)
+    imagen = models.ImageField(upload_to='docentes/', blank=True, null=True)  # Foto del docente
+
+    # 📄 Documentos
+    foto_dni = models.ImageField(upload_to='documentos/docentes/dni/', blank=True, null=True)
+    curriculum_vitae = models.FileField(upload_to='documentos/docentes/cv/', blank=True, null=True)
+    contrato = models.FileField(upload_to='documentos/docentes/contratos/', blank=True, null=True)
+
+    # 📚 Información académica y laboral
+    titulo_profesional = models.CharField(max_length=200, blank=True, null=True)
+    especializacion = models.CharField(max_length=200, blank=True, null=True)
+    institucion_egreso = models.CharField(max_length=200, blank=True, null=True)
+    anios_experiencia = models.PositiveIntegerField(blank=True, null=True)
+    cursos_asignados = models.ManyToManyField('Curso', blank=True)  # Relación con cursos
+
+    # 📌 Información laboral
+    tipo_contrato = models.CharField(
+        max_length=50,
+        choices=[('Tiempo Completo', 'Tiempo Completo'), ('Tiempo Parcial', 'Tiempo Parcial'), ('Contratado', 'Contratado')],
+        default='Contratado'
+    )
+    sueldo = models.DecimalField(max_digits=10, decimal_places=2, blank=True, null=True)
+    fecha_ingreso = models.DateField(null=True, blank=True)
+    fecha_fin_contrato = models.DateField(null=True, blank=True)
+
+    # 🏫 Datos institucionales
+    codigo_docente = models.CharField(max_length=20, unique=True, blank=True, null=True)
+    estado_docente = models.CharField(
+        max_length=20,
+        choices=[('Activo', 'Activo'), ('Licencia', 'Licencia'), ('Retirado', 'Retirado')],
+        default='Activo'
+    )
+
+    # 👨‍👩‍👧‍👦 Contactos de emergencia
+    contacto_emergencia = models.CharField(max_length=100, blank=True, null=True)
+    telefono_contacto_emergencia = models.CharField(max_length=15, blank=True, null=True)
+    parentesco_contacto = models.CharField(max_length=50, blank=True, null=True)
+
+    # ⚕️ Datos médicos
+    tipo_sangre = models.CharField(max_length=5, blank=True, null=True)
+    alergias = models.TextField(blank=True, null=True)
+    enfermedades = models.TextField(blank=True, null=True)
+    seguro_medico = models.CharField(max_length=100, blank=True, null=True)
+
+    # 🌎 Información adicional
+    nacionalidad = models.CharField(max_length=50, blank=True, null=True)
+    idiomas = models.CharField(max_length=100, blank=True, null=True, help_text="Ejemplo: Español, Inglés, Francés")
+
+    def __str__(self):
+        return f"Detalles de {self.docente.nombre} {self.docente.apellido}"
+    
+class TareaDocente(models.Model):
+    docente = models.ForeignKey(Docente, on_delete=models.CASCADE, related_name='tareas')  # Relación con el docente
+    descripcion = models.TextField()  # Descripción de la tarea
+    fecha_entrega = models.DateField()  # Fecha de entrega de la tarea
+    fecha_creacion = models.DateTimeField(auto_now_add=True)  # Fecha en la que se asigna la tarea
+
+    def __str__(self):
+        return f"Tarea para {self.docente.nombre} {self.docente.apellido} - {self.fecha_entrega}"    
+
+
+class AsistenciaDocente(models.Model):
+    docente = models.ForeignKey(Docente, on_delete=models.CASCADE, related_name="asistencias")
+    fecha = models.DateField(default=now)  # Registra la fecha automáticamente
+    hora_ingreso = models.TimeField(blank=True, null=True)
+    hora_salida = models.TimeField(blank=True, null=True)
+
+    class Meta:
+        unique_together = ('docente', 'fecha')  # Evita registros duplicados por día
+
+    def registrar_salida(self):
+        """Registra la hora de salida si aún no ha sido registrada."""
+        if not self.hora_salida:
+            self.hora_salida = now().time()
+            self.save()
+
+    @property
+    def ha_marcado_salida(self):
+        """Retorna True si el docente ya marcó su salida."""
+        return self.hora_salida is not None
+
+    def __str__(self):
+        return f"Asistencia {self.docente.usuario.username} - {self.fecha}"
+
+
+
+
+from django.db import models
+from django.contrib.auth.models import User
 
 class Alumno(models.Model):
-    #usuario = models.OneToOneField(User, on_delete=models.CASCADE)  # Cada alumno tiene un usuario
+    usuario = models.OneToOneField(User, on_delete=models.CASCADE)  # Cada alumno tiene un usuario
     nombre = models.CharField(max_length=100)
     apellido = models.CharField(max_length=100)
     dni = models.CharField(max_length=8, unique=True)
-    seccion = models.ForeignKey(Seccion, on_delete=models.CASCADE)
+    seccion = models.ForeignKey('Seccion', on_delete=models.CASCADE)
 
     def __str__(self):
         return f"{self.nombre} {self.apellido} - {self.seccion}"
+
     
 class AlumnoDetalle(models.Model):
     alumno = models.OneToOneField(Alumno, on_delete=models.CASCADE, related_name="detalles")

@@ -1,0 +1,12 @@
+{% extends 'mi_app/base.html' %}
+{% block content %}
+<div class="container mt-5">
+    <h1>Confirmar Eliminación</h1>
+    <p>¿Está seguro de que desea eliminar la tarea de {{ tarea.docente.nombre }} {{ tarea.docente.apellido }}?</p>
+    <form method="POST">
+        {% csrf_token %}
+        <button type="submit" class="btn btn-danger">Eliminar</button>
+        <a href="{% url 'tarea_docente_list' %}" class="btn btn-secondary">Cancelar</a>
+    </form>
+</div>
+{% endblock %}

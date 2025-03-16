@@ -389,6 +389,13 @@ from django.db.models import Q
 from django.views.generic import ListView
 from .models import Alumno
 
+from django.contrib import messages
+from django.urls import reverse_lazy
+from django.views.generic import ListView, CreateView, UpdateView, DeleteView
+from django.db.models import Q
+from .models import Alumno
+from .forms import AlumnoForm
+
 class AlumnoListView(ListView):
     model = Alumno
     template_name = "alumno/alumno_list.html"
@@ -410,23 +417,85 @@ class AlumnoListView(ListView):
                 Q(dni__icontains=query)
             )
 
-        # Filtro por sección
-        if seccion:
-            queryset = queryset.filter(seccion_id=seccion)
+        # Filtro por sección (asegurar que el valor es un número válido)
+        if seccion.isdigit():
+            queryset = queryset.filter(seccion_id=int(seccion))
 
         return queryset
 
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context["secciones"] = Seccion.objects.all()  # 🔹 Agregamos las secciones disponibles
+        return context
 
-# 🆕 Crear un alumno (CBV)
-class AlumnoCreateView(CreateView):
+
+# 🆕 Crear un alumno (CBV) con usuario autenticado
+from django.contrib import messages
+from django.contrib.auth.mixins import LoginRequiredMixin
+from django.urls import reverse_lazy
+from django.views.generic.edit import CreateView
+from .models import Alumno
+from .forms import AlumnoForm
+from django.contrib.auth.mixins import LoginRequiredMixin
+from django.contrib import messages
+from django.shortcuts import redirect
+from django.urls import reverse_lazy
+from django.views.generic import CreateView
+from .models import Alumno
+from .forms import AlumnoForm
+
+from django.contrib.auth.mixins import LoginRequiredMixin
+from django.views.generic.edit import CreateView
+from django.shortcuts import redirect
+from django.contrib import messages
+from django.urls import reverse_lazy
+from .models import Alumno
+from .forms import AlumnoForm
+
+class AlumnoCreateView(LoginRequiredMixin, CreateView):
     model = Alumno
     form_class = AlumnoForm
     template_name = "alumno/alumno_form.html"
     success_url = reverse_lazy("alumno_list")
 
+    def dispatch(self, request, *args, **kwargs):
+        """Evita que un usuario normal cree más de un Alumno."""
+        if not request.user.is_superuser and Alumno.objects.filter(usuario=request.user).exists():
+            messages.warning(self.request, "Ya tienes un alumno registrado.")
+            return redirect("alumno_list")
+        return super().dispatch(request, *args, **kwargs)
+
+    def get_form_kwargs(self):
+        """Pasa el usuario autenticado al formulario."""
+        kwargs = super().get_form_kwargs()
+        kwargs["user"] = self.request.user  # Agrega el usuario al formulario
+        return kwargs
+
     def form_valid(self, form):
-        messages.success(self.request, "Alumno registrado exitosamente.")
+        """Asigna correctamente el usuario al Alumno."""
+        alumno = form.save(commit=False)
+        if self.request.user.is_superuser:
+            alumno.usuario = form.cleaned_data.get("usuario")  # Usa el usuario del formulario
+        else:
+            alumno.usuario = self.request.user  # Asigna el usuario autenticado
+
+        try:
+            alumno.save()
+            messages.success(self.request, "Alumno registrado exitosamente.")
+        except Exception as e:
+            messages.error(self.request, f"Error al guardar: {e}")
+            return self.form_invalid(form)  # Retorna la vista con errores si algo falla
+
         return super().form_valid(form)
+
+    def form_invalid(self, form):
+        """Muestra los errores del formulario en la plantilla."""
+        print(form.errors)  # Para depuración
+        messages.error(self.request, "Hubo un error en el formulario.")
+        return self.render_to_response(self.get_context_data(form=form))
+
+
+
 
 # ✏️ Editar un alumno (CBV)
 class AlumnoUpdateView(UpdateView):
@@ -448,6 +517,7 @@ class AlumnoDeleteView(DeleteView):
     def delete(self, request, *args, **kwargs):
         messages.success(self.request, "Alumno eliminado correctamente.")
         return super().delete(request, *args, **kwargs)
+
 
 
 # 📋 Listar detalles de alumnos (FBV)
@@ -531,7 +601,7 @@ def eliminar_detalle_alumno(request, alumno_id):
 
 
 
-####################################################################################################
+####################################################################################################Docentes
 from django.shortcuts import render, get_object_or_404, redirect
 from django.contrib import messages
 from django.views.generic import ListView, CreateView, UpdateView, DeleteView
@@ -616,6 +686,96 @@ class DocenteDeleteView(AdminRequiredMixin, DeleteView):
     def delete(self, request, *args, **kwargs):
         messages.success(self.request, "Docente eliminado exitosamente.")
         return super().delete(request, *args, **kwargs)
+
+
+from django.shortcuts import render, get_object_or_404, redirect
+from django.contrib.auth.decorators import login_required
+from .models import Docente, DocenteDetalle
+from .forms import DocenteDetalleForm
+
+# @login_required
+# def listar_docentes(request):
+#     docentes = Docente.objects.all()
+#     return render(request, 'docentes/listar_docentes.html', {'docentes': docentes})
+
+from django.shortcuts import render, get_object_or_404, redirect
+from django.contrib.auth.decorators import login_required
+from django.views.generic import DetailView
+from .models import Docente, DocenteDetalle
+from .forms import DocenteDetalleForm
+
+class DocenteDetalleView(DetailView):
+    model = Docente
+    template_name = "docente/docente_detalle.html"
+    context_object_name = "docente"
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+
+        # Verificar si el docente tiene detalles registrados
+        try:
+            context["detalle"] = self.object.detalles  # Usa el related_name correcto
+        except DocenteDetalle.DoesNotExist:
+            context["detalle"] = None  # Si no existe, se asigna None
+
+        return context
+
+
+# 🔹 Vista para agregar detalles del docente
+@login_required
+def agregar_detalle_docente(request, docente_id):
+    docente = get_object_or_404(Docente, id=docente_id)
+
+    # Evita duplicados verificando el related_name correcto
+    if hasattr(docente, 'detalles'):
+        return redirect('detalle_docente', pk=docente.id)
+
+    if request.method == 'POST':
+        form = DocenteDetalleForm(request.POST, request.FILES)
+        if form.is_valid():
+            detalle = form.save(commit=False)
+            detalle.docente = docente
+            detalle.save()
+            return redirect('detalle_docente', pk=docente.id)
+    else:
+        form = DocenteDetalleForm()
+
+    return render(request, 'docente/agregar_detalle_docente.html', {
+        'form': form,
+        'docente': docente
+    })
+
+
+# 🔹 Vista para actualizar detalles del docente
+@login_required
+def actualizar_detalle_docente(request, docente_id):
+    docente = get_object_or_404(Docente, id=docente_id)
+    detalle = get_object_or_404(DocenteDetalle, docente=docente)
+
+    if request.method == 'POST':
+        form = DocenteDetalleForm(request.POST, request.FILES, instance=detalle)
+        if form.is_valid():
+            form.save()
+            return redirect('detalle_docente', pk=docente.id)
+    else:
+        form = DocenteDetalleForm(instance=detalle)
+
+    return render(request, 'docente/actualizar_detalle_docente.html', {'form': form, 'docente': docente})
+
+# 🔹 Vista para eliminar detalles del docente
+@login_required
+def eliminar_detalle_docente(request, docente_id):
+    docente = get_object_or_404(Docente, id=docente_id)
+    detalle = get_object_or_404(DocenteDetalle, docente=docente)
+
+    if request.method == 'POST':
+        detalle.delete()
+        return redirect('docente_list')
+
+    return render(request, 'docente/eliminar_detalle_docente.html', {'docente': docente})
+
+
+
 
 
 
@@ -2831,10 +2991,27 @@ def registro_usuario(request):
 from django.shortcuts import render
 from django.contrib.auth.decorators import login_required
 
+from django.shortcuts import render
+from django.contrib.auth.decorators import login_required
+
 @login_required
 def home(request):
-    return render(request, 'home.html')
-from django.shortcuts import render
+    items = [
+        {"icon": "📚", "title": "Niveles", "description": "Gestión de los niveles educativos.", "url_name": "nivel_list", "image_url": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQ3kGdcwk09p_c8gzePZ0npC1_qCyb_QRshRA&s"},
+        {"icon": "🎓", "title": "Grados", "description": "Administración de los grados escolares.", "url_name": "grado_list", "image_url": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTmVgON7_a5HfaUH2mXWSSLKjrAbwpwi-rQeQ&s"},
+        {"icon": "🏫", "title": "Secciones", "description": "Gestión de las secciones.", "url_name": "seccion_list", "image_url": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRH8Bkx4phvWriBrDmF6vAaQci6zJoGSsj9lw&s"},
+        {"icon": "📆", "title": "Periodos", "description": "Administración de los periodos académicos.", "url_name": "periodo_list", "image_url": "https://cdn.www.gob.pe/uploads/document/file/5915513/910123-comunicado-proceso-de-matricula-al-periodo-academico-2024-i.jpg"},
+        {"icon": "👨‍🎓", "title": "Alumnos", "description": "Listado y gestión de alumnos.", "url_name": "alumno_list", "image_url": "https://lucaedu.com/wp-content/uploads/2022/02/alumnos-motivados.jpg"},
+        {"icon": "📖", "title": "Cursos", "description": "Administración de los cursos académicos.", "url_name": "curso_list", "image_url": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcR4pOp92Ya6Lu80jfreWN91Hs0V9hv08APDlg&s"},
+        {"icon": "📘", "title": "Unidades", "description": "Gestión de unidades temáticas.", "url_name": "unidad_list", "image_url": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcROj0ErI54hDLZbbVWImNCBesDMix5fDkRSWA&s"},
+        {"icon": "📖", "title": "Temas", "description": "Administración de temas de estudio.", "url_name": "tema_list", "image_url": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSNqOZjmcu4WfiOu4BXIuIKPlAPIVPHmE5syP8oUcUDy59QDrLC_taJB3khf7F7ehuTuM8&usqp=CAU"},
+        {"icon": "📂", "title": "Trabajos", "description": "Registro y revisión de trabajos.", "url_name": "trabajo_list", "image_url": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcT3HD7ICZkcE5VF_5C_Won6FXwC_1imdZkZPw&s"},
+        {"icon": "🕒", "title": "Horarios Docentes", "description": "Gestión de los horarios de los docentes.", "url_name": "listar_horarios", "image_url": "https://marketplace.canva.com/EAFwiQzyvnk/3/0/1600w/canva-horario-escolar-ilustrado-colorido-KX5k1ry5I_k.jpg"},
+        {"icon": "✅", "title": "Asistencia", "description": "Registro y control de asistencia.", "url_name": "seleccionar_curso_asistencia", "image_url": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQsjMaaI2ufiYeQX4F4f86EBi6Y1zb3UrFQiA&s"},
+        {"icon": "📊", "title": "Calificaciones", "description": "Registro y gestión de calificaciones.", "url_name": "calificacion_list", "image_url": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQvMtM6MpyTHGVUSxl7ouRy6qxfK0QtFAf3QQ&s"},
+        {"icon": "🎵", "title": "Reproductor", "description": "Reproduce archivos de audio para el aula.", "url_name": "reproductor_mp3", "image_url": "https://diegojosealtamirano.wordpress.com/wp-content/uploads/2016/03/music.jpg?w=640"},
+    ]
+    return render(request, 'home.html', {"items": items})
 
 
 from django.shortcuts import render, redirect, get_object_or_404
@@ -2887,3 +3064,231 @@ class UserDeleteView(DeleteView):
     model = User
     template_name = "usuarios/user_confirm_delete.html"
     success_url = reverse_lazy("user_list")
+
+####################################################################################################vista ASISTENCIA DOCENTE
+from django.shortcuts import render, redirect
+from django.contrib.auth.decorators import login_required
+from django.utils.timezone import now
+from .models import AsistenciaDocente
+from .forms import AsistenciaDocenteForm
+from django.contrib import messages
+
+from django.shortcuts import render, redirect
+from django.contrib.auth.decorators import login_required
+from django.utils.timezone import now
+from django.contrib import messages
+from .models import AsistenciaDocente
+from .forms import AsistenciaDocenteForm
+
+from django.shortcuts import render, redirect, get_object_or_404
+from django.contrib.auth.decorators import login_required
+from django.contrib import messages
+from django.utils.timezone import now
+from .models import AsistenciaDocente
+from .forms import AsistenciaDocenteForm
+
+from django.shortcuts import render, redirect
+from django.contrib.auth.decorators import login_required
+from django.contrib import messages
+from django.utils.timezone import now
+from .models import AsistenciaDocente
+from .forms import AsistenciaDocenteForm
+
+from django.contrib.auth.decorators import login_required
+from django.contrib import messages
+from django.shortcuts import render, redirect
+from django.utils.timezone import now
+from .models import AsistenciaDocente
+from .forms import AsistenciaDocenteForm
+
+from django.shortcuts import render, redirect, get_object_or_404
+from django.contrib.auth.decorators import login_required
+from django.contrib import messages
+from django.utils.timezone import now
+from django.urls import reverse
+from .models import AsistenciaDocente, Docente
+from .forms import AsistenciaDocenteForm
+
+from django.shortcuts import render, redirect
+from django.contrib.auth.decorators import login_required
+from django.contrib import messages
+from django.urls import reverse
+from django.utils.timezone import now
+from .models import AsistenciaDocente, Docente
+from .forms import AsistenciaDocenteForm
+
+@login_required
+def registrar_asistencia(request):
+    """Permite a un docente registrar su asistencia de ingreso y salida."""
+    try:
+        docente = Docente.objects.get(usuario=request.user)  # Obtiene el docente asociado al usuario
+    except Docente.DoesNotExist:
+        messages.error(request, "No tienes un perfil de docente asociado.")
+        return redirect(reverse('home'))  # Ajusta a la vista correcta
+
+    hoy = now().date()
+    asistencia, creada = AsistenciaDocente.objects.get_or_create(docente=docente, fecha=hoy)
+
+    if request.method == 'POST':
+        if "ingreso" in request.POST:  # Marcar ingreso
+            if not asistencia.hora_ingreso:
+                asistencia.hora_ingreso = now().time()
+                asistencia.save()
+                messages.success(request, "✅ Hora de ingreso registrada correctamente.")
+            else:
+                messages.warning(request, "⚠️ Ya has registrado tu ingreso hoy.")
+
+        elif "salida" in request.POST:  # Marcar salida
+            if asistencia.hora_ingreso and not asistencia.hora_salida:
+                asistencia.hora_salida = now().time()
+                asistencia.save()
+                messages.success(request, "✅ Hora de salida registrada correctamente.")
+            elif not asistencia.hora_ingreso:
+                messages.error(request, "⚠️ No puedes registrar la salida sin haber marcado ingreso.")
+            else:
+                messages.warning(request, "⚠️ Ya has registrado tu salida hoy.")
+
+        return redirect(reverse('listar_asistencia_docente'))
+
+    form = AsistenciaDocenteForm(instance=asistencia)
+    return render(request, 'asistenciadocente/registrar_asistencia.html', {'form': form})
+
+from django import forms
+from django.contrib.auth.decorators import login_required
+from django.shortcuts import render, redirect
+from django.contrib import messages
+from django.urls import reverse
+from django.utils.timezone import now
+from .models import AsistenciaDocente, Docente
+
+class FiltroAsistenciaForm(forms.Form):
+    """Formulario para filtrar las asistencias por fecha y docente."""
+    fecha = forms.DateField(
+        required=False,
+        widget=forms.DateInput(attrs={'type': 'date', 'class': 'form-control'})
+    )
+    docente = forms.ModelChoiceField(
+        queryset=Docente.objects.all(),
+        required=False,
+        widget=forms.Select(attrs={'class': 'form-select'}),
+        empty_label="Todos los docentes"
+    )
+
+@login_required
+def listar_asistencia_docente(request):
+    """
+    - Docentes ven solo sus asistencias.
+    - Administradores pueden filtrar por fecha y docente.
+    """
+    if request.user.is_staff or request.user.is_superuser:
+        # Administradores pueden ver todas las asistencias
+        asistencias = AsistenciaDocente.objects.select_related('docente').order_by('-fecha')
+        form = FiltroAsistenciaForm(request.GET)
+
+        if form.is_valid():
+            if form.cleaned_data["fecha"]:
+                asistencias = asistencias.filter(fecha=form.cleaned_data["fecha"])
+            if form.cleaned_data["docente"]:
+                asistencias = asistencias.filter(docente=form.cleaned_data["docente"])
+
+    else:
+        # Docentes solo ven sus propias asistencias
+        try:
+            docente = Docente.objects.get(usuario=request.user)
+            asistencias = AsistenciaDocente.objects.filter(docente=docente).order_by('-fecha')
+        except Docente.DoesNotExist:
+            messages.error(request, "No tienes un perfil de docente asociado.")
+            return redirect(reverse('home'))
+        
+        form = None  # No se muestra el formulario a los docentes
+
+    return render(request, 'asistenciadocente/listar_asistencia.html', {
+        'asistencias': asistencias,
+        'form': form
+    })
+
+
+####################################################################################################
+from django.shortcuts import render, get_object_or_404, redirect
+from .models import TareaDocente, Docente
+from .forms import TareaDocenteForm
+
+# Vista para listar tareas de docentes
+def tarea_docente_list(request):
+    tareas = TareaDocente.objects.all()
+    return render(request, 'tareadocente/tarea_docente_list.html', {'tareas': tareas})
+
+# Vista para agregar una tarea docente
+def tarea_docente_create(request):
+    if request.method == 'POST':
+        form = TareaDocenteForm(request.POST)
+        if form.is_valid():
+            form.save()
+            return redirect('tarea_docente_list')  # Redirige a la lista de tareas docentes
+    else:
+        form = TareaDocenteForm()
+    return render(request, 'tareadocente/tarea_docente_form.html', {'form': form})
+
+# Vista para editar una tarea docente
+def tarea_docente_edit(request, pk):
+    tarea = get_object_or_404(TareaDocente, pk=pk)
+    if request.method == 'POST':
+        form = TareaDocenteForm(request.POST, instance=tarea)
+        if form.is_valid():
+            form.save()
+            return redirect('tarea_docente_list')  # Redirige a la lista de tareas docentes
+    else:
+        form = TareaDocenteForm(instance=tarea)
+    return render(request, 'tareadocente/tarea_docente_form.html', {'form': form})
+
+# Vista para eliminar una tarea docente
+def tarea_docente_delete(request, pk):
+    tarea = get_object_or_404(TareaDocente, pk=pk)
+    if request.method == 'POST':
+        tarea.delete()
+        return redirect('tarea_docente_list')  # Redirige a la lista de tareas docentes
+    return render(request, 'tareadocente/tarea_docente_confirm_delete.html', {'tarea': tarea})
+
+
+from django.shortcuts import render
+from .models import TareaDocente
+from datetime import date
+
+from django.shortcuts import render, redirect
+from .models import TareaDocente
+from .forms import TareaDocenteForm
+from datetime import date
+
+def calendario_tareas(request):
+    # Obtén las tareas con fecha de entrega
+    tareas = TareaDocente.objects.all()
+    
+    # Prepara los eventos para FullCalendar
+    eventos = []
+    for tarea in tareas:
+        eventos.append({
+            'title': f'{tarea.descripcion} ({tarea.docente.nombre})',
+            'start': tarea.fecha_entrega.strftime('%Y-%m-%d'),
+            'end': tarea.fecha_entrega.strftime('%Y-%m-%d'),
+            'description': tarea.descripcion,
+            'docente': f'{tarea.docente.nombre} {tarea.docente.apellido}',
+        })
+
+    if request.method == 'POST':
+        # Si se envía el formulario para crear una tarea
+        form = TareaDocenteForm(request.POST)
+        if form.is_valid():
+            form.save()
+            return redirect('calendario_tareas')  # Redirigir después de guardar
+    else:
+        form = TareaDocenteForm()
+
+    # Si se elimina una tarea
+    if request.method == 'DELETE':
+        tarea_id = request.POST.get('id')
+        tarea = TareaDocente.objects.get(id=tarea_id)
+        tarea.delete()
+        return redirect('calendario_tareas')  # Redirigir después de eliminar
+
+    return render(request, 'tareadocente/calendario_tareas.html', {'eventos': eventos, 'form': form, 'tareas': tareas})
+

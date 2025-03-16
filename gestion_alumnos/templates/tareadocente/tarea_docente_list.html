@@ -1,0 +1,33 @@
+{% extends 'mi_app/base.html' %}
+
+{% block content %}
+<div class="container mt-5">
+    <h1>Tareas Docentes</h1>
+    <a href="{% url 'tarea_docente_create' %}" class="btn btn-primary mb-3">Asignar nueva tarea</a>
+    <table class="table table-bordered">
+        <thead>
+            <tr>
+                <th>Docente</th>
+                <th>Descripción</th>
+                <th>Fecha de entrega</th>
+                <th>Fecha de creación</th>
+                <th>Acciones</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for tarea in tareas %}
+            <tr>
+                <td>{{ tarea.docente.nombre }} {{ tarea.docente.apellido }}</td>
+                <td>{{ tarea.descripcion }}</td>
+                <td>{{ tarea.fecha_entrega }}</td>
+                <td>{{ tarea.fecha_creacion }}</td>
+                <td>
+                    <a href="{% url 'tarea_docente_edit' tarea.pk %}" class="btn btn-warning">Editar</a>
+                    <a href="{% url 'tarea_docente_delete' tarea.pk %}" class="btn btn-danger">Eliminar</a>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}

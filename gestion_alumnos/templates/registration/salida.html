@@ -1,11 +1,17 @@
 {% extends "mi_app/base.html" %}
 
 {% block content %}
+<style>
+    body {
+        background: url('https://st4.depositphotos.com/1757635/22304/i/450/depositphotos_223041470-stock-photo-goodbye-parting-background-farewell-woman.jpg') no-repeat center center fixed;
+        background-size: cover;
+    }
+</style>
 <div class="container d-flex justify-content-center align-items-center vh-100">
-    <div class="text-center p-4 bg-white shadow rounded">
+    <div class="text-center p-5 bg-white shadow-lg rounded" style="max-width: 400px; opacity: 0.9;">
         <h2 class="text-danger">Has cerrado sesión correctamente</h2>
         <p class="lead">¡Gracias por usar el sistema!</p>
-        <a href="{% url 'login' %}" class="btn btn-primary">Iniciar sesión nuevamente</a>
+        <a href="{% url 'login' %}" class="btn btn-primary mt-3">Iniciar sesión nuevamente</a>
     </div>
 </div>
 {% endblock %}

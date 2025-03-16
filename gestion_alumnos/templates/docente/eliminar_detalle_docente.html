@@ -1,0 +1,18 @@
+{% extends 'mi_app/base.html' %}
+
+{% block content %}
+<div class="container mt-4">
+    <h2 class="mb-3 text-danger">Eliminar Detalles de {{ docente.nombre }} {{ docente.apellido }}</h2>
+    <p>¿Estás seguro de que deseas eliminar los detalles de este docente? Esta acción no se puede deshacer.</p>
+
+    <form method="post">
+        {% csrf_token %}
+        <button type="submit" class="btn btn-danger">
+            <i class="fas fa-trash-alt"></i> Confirmar Eliminación
+        </button>
+        <a href="{% url 'detalle_docente' docente.id %}" class="btn btn-secondary">
+            <i class="fas fa-arrow-left"></i> Cancelar
+        </a>
+    </form>
+</div>
+{% endblock %}
